@@ -1,4 +1,4 @@
-cd C:\saturn\first
+cd C:\saturn\project
 make -f makefile
 mkdir cd
 copy sl.bin cd\0.bin

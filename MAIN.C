@@ -7,15 +7,26 @@
 #include "structs.h"
 #include "assetrefs.h"
 
-#define		NBG1_CEL_ADR		( VDP2_VRAM_B1 + 0x02000 )
-#define		NBG1_MAP_ADR		( VDP2_VRAM_B1 + 0x12000 )
-#define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00200 )
+#define		RBG0_CEL_ADR		VDP2_VRAM_A0
+#define		RBG0_MAP_ADR		VDP2_VRAM_B0
+#define		RBG0_COL_ADR		( VDP2_COLRAM + 0x00200 )
+#define		RBG0_PAR_ADR		( VDP2_VRAM_A1 + 0x1fe00 )
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
 #define NUM_SPRITES 200
 SPRITE_INFO sprites[NUM_SPRITES];
 const SPR_ATTR DEFAULT_ATTR = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
 int numDispSprites = 1;
+
+#define STATE_FALLING 0
+#define STATE_RISING 1
+int state = 0;
+
+FIXED scale = toFIXED(1.0);
+FIXED scaleSpeed = toFIXED(0.0);
+
+FIXED screenX = toFIXED(0.0);
+FIXED screenY = toFIXED(0.0);
 
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr)
 {
@@ -31,21 +42,13 @@ void handleInput(void)
 {
 	Uint16 data = ~Smpc_Peripheral[0].data;
 	if (data & PER_DGT_KR)
-		sprites[0].pos[X] += toFIXED(1.0);
+		screenX += toFIXED(2.0);
 	else if (data & PER_DGT_KL)
-		sprites[0].pos[X] -= toFIXED(1.0);
+		screenX -= toFIXED(2.0);
 	if (data & PER_DGT_KU)
-		sprites[0].pos[Y] -= toFIXED(1.0);
+		screenY -= toFIXED(2.0);
 	else if (data & PER_DGT_KD)
-		sprites[0].pos[Y] += toFIXED(1.0);
-	if (data & PER_DGT_TA)
-		sprites[0].pos[S] += toFIXED(0.1);
-	if (data & PER_DGT_TB)
-		sprites[0].pos[S] -= toFIXED(0.1);
-	if (data & PER_DGT_TL)
-		sprites[0].ang += DEGtoANG(1.0);
-	if (data & PER_DGT_TR)
-		sprites[0].ang -= DEGtoANG(1.0);
+		screenY += toFIXED(2.0);
 }
 
 void initSprites(void)
@@ -62,6 +65,29 @@ void initSprites(void)
 	}
 }
 
+void updateBG(void)
+{
+	if (state == STATE_FALLING) {
+		scaleSpeed -= toFIXED(0.001);
+		scale += scaleSpeed;
+		if (scale <= toFIXED(0.2)) {
+			state = STATE_RISING;
+			scaleSpeed = toFIXED(0.05);
+		}
+	}
+	else if (state == STATE_RISING) {
+		scaleSpeed -= toFIXED(0.001);
+		scale += scaleSpeed;
+		if (scaleSpeed <= 0) {
+			state = STATE_FALLING;
+			scaleSpeed = 0;
+		}
+	}
+	slLookR(screenX, screenY);
+	slZoomR(scale, scale);
+	slPrintFX(scaleSpeed, slLocate(0,0));
+}
+
 void dispSprites(void)
 {
 	int i;
@@ -71,41 +97,37 @@ void dispSprites(void)
 		slDispSprite(sprites[i].pos, &sprites[i].attr, sprites[i].ang);
 	}
 }
-
-void loadBmp(Uint16 *vram, Uint16 vramWidth, Uint16 *img, Uint16 imgWidth, Uint16 imgHeight) {
-	int i;
-	Uint32 vramOffset = 0;
-	Uint32 imgOffset = 0;
-	
-	for (i = 0; i < imgHeight; i++) {
-		memcpy((void *)(vram + vramOffset), (void *)(img + imgOffset), imgWidth * sizeof(Uint16));
-		vramOffset += vramWidth;
-		imgOffset += imgWidth;
-	}
-}
-
  
-
 void ss_main(void)
 {
 	slInitSystem(TV_320x224,tex_sprites,1);
 	slTVOff();
-	set_sprite(pic_sprites, 3, tex_sprites);
-	initSprites();
-	slPrint("dongo" , slLocate(9,2));
+	// set_sprite(pic_sprites, 3, tex_sprites);
+	// initSprites();
 	
-	slColRAMMode(CRM16_1024);
+	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
-	slBitMapNbg1(COL_TYPE_32768, BM_512x256, (void *)VDP2_VRAM_A0);
-	loadBmp((Uint16 *)VDP2_VRAM_A0, 512, waifu, 256, 220);
 	
-	slScrPosNbg1(toFIXED(0.0) , toFIXED(0.0));
-	slScrAutoDisp(NBG0ON | NBG1ON);
+	slRparaInitSet((void *)RBG0_PAR_ADR);
+	slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
+	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_12BIT);
+	slPlaneRA(PL_SIZE_1x1);
+	sl1MapRA((void *)RBG0_MAP_ADR);
+	slOverRA(2);
+	Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
+	Map2VRAM(map_map1, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);
+	Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
+	
+	slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
+	slLookR(toFIXED(0.0) , toFIXED(0.0));
+	
+	slScrAutoDisp(NBG0ON | RBG0ON);
 	slTVOn();
-	sprites[0].pos[X] = toFIXED(0.0);
+	//sprites[0].pos[X] = toFIXED(0.0);
 	while(1) {
 		handleInput();
-		dispSprites();
+		updateBG();
+		// dispSprites();
 		slSynch();
 	} 
 }

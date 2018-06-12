@@ -43,3 +43,4 @@ void Pal2CRAM( Uint16 *Pal_Data , void *Col_Adr , Uint32 suu )
 		*(VRAM++) = *(Pal_Data++);
 }
 
+
