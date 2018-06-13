@@ -73,6 +73,8 @@ void updateBG(void)
 		if (scale <= toFIXED(0.2)) {
 			state = STATE_RISING;
 			scaleSpeed = toFIXED(0.05);
+			slPrintFX(screenX >> 4, slLocate(0,1));
+			slPrintFX(screenY >> 4, slLocate(0,2));
 		}
 	}
 	else if (state == STATE_RISING) {
@@ -86,14 +88,18 @@ void updateBG(void)
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
 	slPrintFX(scaleSpeed, slLocate(0,0));
+	slPrintFX(scale, slLocate(0,3));
 }
 
 void dispSprites(void)
 {
 	int i;
+	FIXED spriteScale = (((1<<16) << 4)/scale) << 12; //through random bit shifting, i've gotten the sprite scaling to match the plane scaling
 	for (i = 0; i < numDispSprites; i++) {
 		// sprites[i].pos[X] = toFIXED((slRandom() % 320) - 160);
 		// sprites[i].pos[Y] = toFIXED((slRandom() % 224) - 112);
+		sprites[i].pos[S] = spriteScale;
+		slPrintFX(spriteScale, slLocate(0,4));
 		slDispSprite(sprites[i].pos, &sprites[i].attr, sprites[i].ang);
 	}
 }
@@ -102,8 +108,8 @@ void ss_main(void)
 {
 	slInitSystem(TV_320x224,tex_sprites,1);
 	slTVOff();
-	// set_sprite(pic_sprites, 3, tex_sprites);
-	// initSprites();
+	set_sprite(pic_sprites, 3, tex_sprites);
+	initSprites();
 	
 	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
@@ -123,11 +129,11 @@ void ss_main(void)
 	
 	slScrAutoDisp(NBG0ON | RBG0ON);
 	slTVOn();
-	//sprites[0].pos[X] = toFIXED(0.0);
+	sprites[0].pos[X] = toFIXED(0.0);
 	while(1) {
 		handleInput();
 		updateBG();
-		// dispSprites();
+		dispSprites();
 		slSynch();
 	} 
 }
