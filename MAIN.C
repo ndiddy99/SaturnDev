@@ -73,8 +73,8 @@ void updateBG(void)
 		if (scale <= toFIXED(0.2)) {
 			state = STATE_RISING;
 			scaleSpeed = toFIXED(0.05);
-			slPrintFX(screenX >> 4, slLocate(0,1));
-			slPrintFX(screenY >> 4, slLocate(0,2));
+			slPrintFX((screenX >> 4) & 0xffff0000, slLocate(0,1));
+			slPrintFX((screenY >> 4) & 0xffff0000, slLocate(0,2));
 		}
 	}
 	else if (state == STATE_RISING) {
@@ -94,10 +94,10 @@ void updateBG(void)
 void dispSprites(void)
 {
 	int i;
-	FIXED spriteScale = (((1<<16) << 4)/scale) << 12; //through random bit shifting, i've gotten the sprite scaling to match the plane scaling
+	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	for (i = 0; i < numDispSprites; i++) {
-		// sprites[i].pos[X] = toFIXED((slRandom() % 320) - 160);
-		// sprites[i].pos[Y] = toFIXED((slRandom() % 224) - 112);
+		sprites[i].pos[X] = slMulFX(-screenX, spriteScale);
+		sprites[i].pos[Y] = slMulFX(-screenY, spriteScale);
 		sprites[i].pos[S] = spriteScale;
 		slPrintFX(spriteScale, slLocate(0,4));
 		slDispSprite(sprites[i].pos, &sprites[i].attr, sprites[i].ang);
