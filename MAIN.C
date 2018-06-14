@@ -1,6 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*	Pad Control							*/
-/*----------------------------------------------------------------------*/
 #include	"sgl.h"
 #include	"sega_sys.h"
 
@@ -8,9 +5,14 @@
 #include "assetrefs.h"
 
 #define		RBG0_CEL_ADR		VDP2_VRAM_A0
-#define		RBG0_MAP_ADR		VDP2_VRAM_B0
+#define		RBG0_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
 #define		RBG0_COL_ADR		( VDP2_COLRAM + 0x00200 )
 #define		RBG0_PAR_ADR		( VDP2_VRAM_A1 + 0x1fe00 )
+
+#define		NBG1_CEL_ADR		( VDP2_VRAM_B0)
+#define		NBG1_MAP_ADR		( VDP2_VRAM_B0 + 0x10000 )
+#define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00400 )
+
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
 #define NUM_SPRITES 200
@@ -60,9 +62,44 @@ void initSprites(void)
 		sprites[i].pos[Z] = toFIXED(169);
 		sprites[i].pos[S] = toFIXED(1.0); 
 		sprites[i].ang = DEGtoANG(0.0);
-		// {t,(a)|(((d)>>24)&0xc0),c,g,(d)&0x0f3f}
 		sprites[i].attr = DEFAULT_ATTR;
 	}
+}
+
+void initVDP2(void)
+{
+	slColRAMMode(CRM16_2048);
+	slBack1ColSet((void *)BACK_COL_ADR , 0);
+	
+	//init rotating bg 
+	slRparaInitSet((void *)RBG0_PAR_ADR);
+	slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
+	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_12BIT);
+	slPlaneRA(PL_SIZE_1x1);
+	sl1MapRA((void *)RBG0_MAP_ADR);
+	slOverRA(2);
+	Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
+	Map2VRAM(map_map1, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);
+	Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
+	
+	slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
+	slLookR(toFIXED(0.0) , toFIXED(0.0));
+	
+	//init face
+	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
+	slPageNbg1((void *)NBG1_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
+	slPlaneNbg1(PL_SIZE_1x1);
+	slMapNbg1((void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR);
+	Cel2VRAM(cel_face, (void *)NBG1_CEL_ADR, 16 * 64 * 4);
+	Map2VRAM(map_face, (void *)NBG1_MAP_ADR, 64, 64, 2, 0);
+	Pal2CRAM(pal_face, (void *)NBG1_COL_ADR, 256);
+	slScrPosNbg1(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0));
+	slPriorityNbg1(7);
+	slColorCalc(CC_RATE | CC_TOP | NBG1ON);
+	slColRateNbg1(0x08); 
+	slColorCalcOn(NBG1ON);
+	
+	slScrAutoDisp(NBG0ON | NBG1ON | RBG0ON);	
 }
 
 void updateBG(void)
@@ -96,10 +133,10 @@ void dispSprites(void)
 	int i;
 	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	for (i = 0; i < numDispSprites; i++) {
-		sprites[i].pos[X] = slMulFX(-screenX, spriteScale);
-		sprites[i].pos[Y] = slMulFX(-screenY, spriteScale);
+		sprites[i].pos[X] = slMulFX(toFIXED(35.0) - screenX, spriteScale);
+		sprites[i].pos[Y] = slMulFX(toFIXED(35.0) - screenY, spriteScale);
 		sprites[i].pos[S] = spriteScale;
-		slPrintFX(spriteScale, slLocate(0,4));
+		slPrintFX(sprites[i].pos[X], slLocate(0,4));
 		slDispSprite(sprites[i].pos, &sprites[i].attr, sprites[i].ang);
 	}
 }
@@ -110,26 +147,10 @@ void ss_main(void)
 	slTVOff();
 	set_sprite(pic_sprites, 3, tex_sprites);
 	initSprites();
-	
-	slColRAMMode(CRM16_2048);
-	slBack1ColSet((void *)BACK_COL_ADR , 0);
-	
-	slRparaInitSet((void *)RBG0_PAR_ADR);
-	slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
-	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_12BIT);
-	slPlaneRA(PL_SIZE_1x1);
-	sl1MapRA((void *)RBG0_MAP_ADR);
-	slOverRA(2);
-	Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
-	Map2VRAM(map_map1, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);
-	Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
-	
-	slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
-	slLookR(toFIXED(0.0) , toFIXED(0.0));
-	
-	slScrAutoDisp(NBG0ON | RBG0ON);
+	initVDP2();
 	slTVOn();
 	sprites[0].pos[X] = toFIXED(0.0);
+	mapWrite(RBG0_MAP_ADR, 2, 2, 0x0000);
 	while(1) {
 		handleInput();
 		updateBG();
