@@ -3,6 +3,7 @@
 
 #include "structs.h"
 #include "assetrefs.h"
+#include "miscfuncs.c"
 
 #define		RBG0_CEL_ADR		VDP2_VRAM_A0
 #define		RBG0_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
@@ -29,6 +30,16 @@ FIXED scaleSpeed = toFIXED(0.0);
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
+
+//function prototypes
+static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
+void handleInput(void);
+void initSprites(void);
+void initVDP2(void);
+void updateBG(void);
+void handleGroundCollision(FIXED x, FIXED y);
+void dispSprites(void);
+void ss_main(void);
 
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr)
 {
@@ -110,8 +121,9 @@ void updateBG(void)
 		if (scale <= toFIXED(0.2)) {
 			state = STATE_RISING;
 			scaleSpeed = toFIXED(0.05);
-			slPrintFX((screenX >> 4) & 0xffff0000, slLocate(0,1));
-			slPrintFX((screenY >> 4) & 0xffff0000, slLocate(0,2));
+			slPrintFX((screenX >> 4), slLocate(0,1));
+			slPrintFX((screenY >> 4), slLocate(0,2));
+			handleGroundCollision((screenX >> 4), (screenY >> 4)); //divide by 16- 16 px per tile
 		}
 	}
 	else if (state == STATE_RISING) {
@@ -126,6 +138,29 @@ void updateBG(void)
 	slZoomR(scale, scale);
 	slPrintFX(scaleSpeed, slLocate(0,0));
 	slPrintFX(scale, slLocate(0,3));
+}
+
+void handleGroundCollision(FIXED x, FIXED y) {
+	#define BLOCK_THRESHOLD_LOW toFIXED(0.2)
+	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
+	FIXED xDecimal = x & 0x0000ffff;
+	FIXED yDecimal = y & 0x0000ffff;
+	//todo: check for sprite collision here, make ground collision conditional upon sprite collision not happening
+	
+	if (xDecimal > BLOCK_THRESHOLD_HIGH || xDecimal < BLOCK_THRESHOLD_LOW) { //either less than .2 or greater than .8: trigger block to left and block
+		mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y), 1, 0x0000);
+		mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y), 1, 0x0000);
+		
+		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW) { //if y is in same threshold, trigger blocks to top as well
+			mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y) - 1, 1, 0x0000);
+			mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y) - 1, 1, 0x0000);
+		}
+	}
+	else { 
+		mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y), 1, 0x0000); //otherwise, just trigger block
+		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW)
+			mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y) - 1, 1, 0x0000);
+	}
 }
 
 void dispSprites(void)
@@ -150,7 +185,7 @@ void ss_main(void)
 	initVDP2();
 	slTVOn();
 	sprites[0].pos[X] = toFIXED(0.0);
-	mapWrite(RBG0_MAP_ADR, 2, 2, 0x0000);
+	mapWrite(RBG0_MAP_ADR, 5, 4, 1, 0x0000);
 	while(1) {
 		handleInput();
 		updateBG();

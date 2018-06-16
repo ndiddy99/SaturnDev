@@ -31,10 +31,11 @@ void Map2VRAM( Uint16 *Map_Data , void *Map_Adr , Uint16 suuj , Uint16 suui , Ui
 	}
 }
 
-void mapWrite(Uint16* MapAddr, Uint8 x, Uint8 y, Uint16 data)
+void mapWrite(Uint16* MapAddr, Uint16 x, Uint16 y, Uint16 palNum, Uint16 data)
 {
-	Uint16 offset = (y * 32) + x;
-	MapAddr[offset] = data;
+	int offset = (y * 32) + x;
+	MapAddr += offset;
+	*MapAddr = data | (palNum << 12);
 }
 
 void Pal2CRAM( Uint16 *Pal_Data , void *Col_Adr , Uint32 suu )
