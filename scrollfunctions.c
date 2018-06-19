@@ -1,4 +1,5 @@
 #include	"sgl.h"
+void MapWrite(Uint16* MapAddr, Uint16 x, Uint16 y, Uint16 palNum, Uint16 data);
 
 void Cel2VRAM( Uint8 *Cel_Data , void *Cell_Adr , Uint32 suu )
 {
@@ -31,11 +32,17 @@ void Map2VRAM( Uint16 *Map_Data , void *Map_Adr , Uint16 suuj , Uint16 suui , Ui
 	}
 }
 
-void mapWrite(Uint16* MapAddr, Uint16 x, Uint16 y, Uint16 palNum, Uint16 data)
+void MapWrite(Uint16* MapAddr, Uint16 x, Uint16 y, Uint16 palNum, Uint16 data)
 {
 	int offset = (y * 32) + x;
 	MapAddr += offset;
 	*MapAddr = data | (palNum << 12);
+}
+
+Uint16 MapRead(Uint16* MapAddr, Uint16 x, Uint16 y)
+{
+	Uint16 offset = (y * 32) + x;
+	return (MapAddr[offset] & 0x0FFF); //isolate tile data
 }
 
 void Pal2CRAM( Uint16 *Pal_Data , void *Col_Adr , Uint32 suu )

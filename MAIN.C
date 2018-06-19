@@ -38,6 +38,7 @@ void initSprites(void);
 void initVDP2(void);
 void updateBG(void);
 void handleGroundCollision(FIXED x, FIXED y);
+void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 void dispSprites(void);
 void ss_main(void);
 
@@ -74,6 +75,7 @@ void initSprites(void)
 		sprites[i].pos[S] = toFIXED(1.0); 
 		sprites[i].ang = DEGtoANG(0.0);
 		sprites[i].attr = DEFAULT_ATTR;
+		sprites[i].type = TYPE_NULL;
 	}
 }
 
@@ -85,7 +87,7 @@ void initVDP2(void)
 	//init rotating bg 
 	slRparaInitSet((void *)RBG0_PAR_ADR);
 	slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
-	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_12BIT);
+	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_10BIT);
 	slPlaneRA(PL_SIZE_1x1);
 	sl1MapRA((void *)RBG0_MAP_ADR);
 	slOverRA(2);
@@ -121,8 +123,8 @@ void updateBG(void)
 		if (scale <= toFIXED(0.2)) {
 			state = STATE_RISING;
 			scaleSpeed = toFIXED(0.05);
-			slPrintFX((screenX >> 4), slLocate(0,1));
-			slPrintFX((screenY >> 4), slLocate(0,2));
+		//	slPrintFX((screenX >> 4), slLocate(0,1));
+			//slPrintFX((screenY >> 4), slLocate(0,2));
 			handleGroundCollision((screenX >> 4), (screenY >> 4)); //divide by 16- 16 px per tile
 		}
 	}
@@ -136,8 +138,6 @@ void updateBG(void)
 	}
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
-	slPrintFX(scaleSpeed, slLocate(0,0));
-	slPrintFX(scale, slLocate(0,3));
 }
 
 void handleGroundCollision(FIXED x, FIXED y) {
@@ -146,20 +146,62 @@ void handleGroundCollision(FIXED x, FIXED y) {
 	FIXED xDecimal = x & 0x0000ffff;
 	FIXED yDecimal = y & 0x0000ffff;
 	//todo: check for sprite collision here, make ground collision conditional upon sprite collision not happening
-	
 	if (xDecimal > BLOCK_THRESHOLD_HIGH || xDecimal < BLOCK_THRESHOLD_LOW) { //either less than .2 or greater than .8: trigger block to left and block
-		mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y), 1, 0x0000);
-		mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y), 1, 0x0000);
+		writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
+		writeBlock(fixedToUint16(x), fixedToUint16(y), 0x0000);
 		
 		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW) { //if y is in same threshold, trigger blocks to top as well
-			mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y) - 1, 1, 0x0000);
-			mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y) - 1, 1, 0x0000);
+			writeBlock(fixedToUint16(x) - 1, fixedToUint16(y) - 1, 0x0000);
+			writeBlock(fixedToUint16(x), fixedToUint16(y) - 1, 0x0000);
 		}
 	}
 	else { 
-		mapWrite(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y), 1, 0x0000); //otherwise, just trigger block
+		writeBlock(fixedToUint16(x), fixedToUint16(y), 0x0000); //otherwise, just trigger block
 		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW)
-			mapWrite(RBG0_MAP_ADR, fixedToUint16(x) - 1, fixedToUint16(y) - 1, 1, 0x0000);
+			writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
+	}
+}
+
+//when I have more block types, this should scan them to make sure they're breakable before breaking them
+void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
+	if (MapRead(RBG0_MAP_ADR, x, y) == 0x0004)
+		MapWrite(RBG0_MAP_ADR, x, y, 1, data);
+}
+
+void updateSprites(void)
+{
+	int i;
+	FIXED dx, dy;
+	for (i = 0; i < numDispSprites; i++) {
+		switch(sprites[i].type) {
+		case TYPE_NULL:
+			break;
+		case TYPE_CIRCLE:
+			#define CIRCLE_SPEED toFIXED(1.0)
+			if (slRandom() > toFIXED(0.5))
+				sprites[i].ang += DEGtoANG(10);
+			else
+				sprites[i].ang -= DEGtoANG(10);
+			dx = slMulFX(CIRCLE_SPEED, slSin(sprites[i].ang));
+			dy = slMulFX(CIRCLE_SPEED, slCos(sprites[i].ang));
+			sprites[i].pos[X] += dx;
+			sprites[i].pos[Y] += dy;
+			slPrint("Target X:", slLocate(0,0));
+			slPrintFX(sprites[i].pos[X], slLocate(10,0));
+			slPrint("Target Y:", slLocate(0,1));
+			slPrintFX(sprites[i].pos[Y], slLocate(10,1));
+			slPrint("Angle:", slLocate(0,2));
+			slPrintFX(sprites[i].ang, slLocate(7,2));
+			if (MapRead(RBG0_MAP_ADR, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+				slPrint("zongo", slLocate(0,3));
+				sprites[i].pos[X] -= dx;
+				sprites[i].pos[Y] -= dy;
+				sprites[i].ang += DEGtoANG(90);
+			}
+			else
+				slPrint("dongo", slLocate(0,3));
+			break;
+		}
 	}
 }
 
@@ -167,12 +209,15 @@ void dispSprites(void)
 {
 	int i;
 	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
+	FIXED spritePos[XYZS];
 	for (i = 0; i < numDispSprites; i++) {
-		sprites[i].pos[X] = slMulFX(toFIXED(35.0) - screenX, spriteScale);
-		sprites[i].pos[Y] = slMulFX(toFIXED(35.0) - screenY, spriteScale);
-		sprites[i].pos[S] = spriteScale;
-		slPrintFX(sprites[i].pos[X], slLocate(0,4));
-		slDispSprite(sprites[i].pos, &sprites[i].attr, sprites[i].ang);
+		spritePos[X] = slMulFX(sprites[i].pos[X] - screenX, spriteScale);
+		spritePos[Y] = slMulFX(sprites[i].pos[Y] - screenY, spriteScale);
+		slPrintFX(spritePos[X], slLocate(0,4));
+		slPrintFX(spritePos[Y], slLocate(0,5));
+		slPrintFX(spriteScale, slLocate(0,6));
+		spritePos[S] = spriteScale;
+		slDispSprite(spritePos, &sprites[i].attr, sprites[i].ang);
 	}
 }
  
@@ -184,11 +229,13 @@ void ss_main(void)
 	initSprites();
 	initVDP2();
 	slTVOn();
-	sprites[0].pos[X] = toFIXED(0.0);
-	mapWrite(RBG0_MAP_ADR, 5, 4, 1, 0x0000);
+	sprites[0].pos[X] = toFIXED(50.0);
+	sprites[0].pos[Y] = toFIXED(50.0);
+	sprites[0].type = TYPE_CIRCLE;
 	while(1) {
 		handleInput();
 		updateBG();
+		updateSprites();
 		dispSprites();
 		slSynch();
 	} 
