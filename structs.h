@@ -7,3 +7,11 @@ typedef struct SpriteInfo {
 
 #define TYPE_NULL 0
 #define TYPE_CIRCLE 1
+
+struct SpriteList {
+	SPRITE_INFO sprite;
+	struct SpriteList* next;
+};
+
+typedef struct SpriteList* SpriteNode;
+

@@ -1,3 +1,14 @@
+/*
+To-Dos:
+Make enemies killable by crushing and falling
+Draw block textures that more closely match Bound High's
+Make a level progression system (I'm thinking making a level function that is called for each level from the main function)
+Add score/lives
+Animate fake Chalvo
+Add level begin/end animations
+
+*/
+
 #include	"sgl.h"
 #include	"sega_sys.h"
 
@@ -16,10 +27,9 @@
 
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
-#define NUM_SPRITES 200
-SPRITE_INFO sprites[NUM_SPRITES];
+SPRITE_INFO defaultSprite;
 const SPR_ATTR DEFAULT_ATTR = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
-int numDispSprites = 1;
+SpriteNode head;
 
 #define STATE_FALLING 0
 #define STATE_RISING 1
@@ -35,6 +45,8 @@ FIXED screenY = toFIXED(0.0);
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
 void handleInput(void);
 void initSprites(void);
+SpriteNode createSpriteNode();
+SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
 void initVDP2(void);
 void updateBG(void);
 void handleGroundCollision(FIXED x, FIXED y);
@@ -67,16 +79,37 @@ void handleInput(void)
 
 void initSprites(void)
 {
-	int i;
-	for (i = 0; i < NUM_SPRITES; i++) {
-		sprites[i].pos[X] = toFIXED(192.0); //start offscreen (160 + sprite width)
-		sprites[i].pos[Y] = toFIXED(0.0);
-		sprites[i].pos[Z] = toFIXED(169);
-		sprites[i].pos[S] = toFIXED(1.0); 
-		sprites[i].ang = DEGtoANG(0.0);
-		sprites[i].attr = DEFAULT_ATTR;
-		sprites[i].type = TYPE_NULL;
+	defaultSprite.pos[X] = toFIXED(0.0); //start offscreen (160 + sprite width)
+	defaultSprite.pos[Y] = toFIXED(0.0);
+	defaultSprite.pos[Z] = toFIXED(169);
+	defaultSprite.pos[S] = toFIXED(1.0); 
+	defaultSprite.ang = DEGtoANG(0.0);
+	defaultSprite.attr = DEFAULT_ATTR;
+	defaultSprite.type = TYPE_CIRCLE;
+	head = addSpriteNode(NULL, defaultSprite);
+}
+
+SpriteNode createSpriteNode(void)
+{
+	SpriteNode tmp = (SpriteNode)malloc(sizeof(struct SpriteList));
+	tmp->next = NULL;
+	return tmp;
+}
+
+SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
+{
+	SpriteNode tmp, ptr;
+	tmp = createSpriteNode();
+	tmp->sprite = data;
+	if (head == NULL)
+		head = tmp;
+	else {
+		ptr = head;
+		while (ptr->next != NULL)
+			ptr = ptr->next;
+		ptr->next = tmp;
 	}
+	return head;
 }
 
 void initVDP2(void)
@@ -172,37 +205,39 @@ void updateSprites(void)
 {
 	int i;
 	FIXED dx, dy;
-	for (i = 0; i < numDispSprites; i++) {
-		switch(sprites[i].type) {
+	SpriteNode ptr = head;
+	do {
+		switch(ptr->sprite.type) {
 		case TYPE_NULL:
 			break;
 		case TYPE_CIRCLE:
 			#define CIRCLE_SPEED toFIXED(1.0)
 			if (slRandom() > toFIXED(0.5))
-				sprites[i].ang += DEGtoANG(10);
+				ptr->sprite.ang += DEGtoANG(10);
 			else
-				sprites[i].ang -= DEGtoANG(10);
-			dx = slMulFX(CIRCLE_SPEED, slSin(sprites[i].ang));
-			dy = slMulFX(CIRCLE_SPEED, slCos(sprites[i].ang));
-			sprites[i].pos[X] += dx;
-			sprites[i].pos[Y] += dy;
+				ptr->sprite.ang -= DEGtoANG(10);
+			dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
+			dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
+			ptr->sprite.pos[X] += dx;
+			ptr->sprite.pos[Y] += dy;
 			slPrint("Target X:", slLocate(0,0));
-			slPrintFX(sprites[i].pos[X], slLocate(10,0));
+			slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
 			slPrint("Target Y:", slLocate(0,1));
-			slPrintFX(sprites[i].pos[Y], slLocate(10,1));
+			slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
 			slPrint("Angle:", slLocate(0,2));
-			slPrintFX(sprites[i].ang, slLocate(7,2));
-			if (MapRead(RBG0_MAP_ADR, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+			slPrintFX(ptr->sprite.ang, slLocate(7,2));
+			if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
 				slPrint("zongo", slLocate(0,3));
-				sprites[i].pos[X] -= dx;
-				sprites[i].pos[Y] -= dy;
-				sprites[i].ang += DEGtoANG(90);
+				ptr->sprite.pos[X] -= dx;
+				ptr->sprite.pos[Y] -= dy;
+				ptr->sprite.ang += DEGtoANG(90);
 			}
 			else
 				slPrint("dongo", slLocate(0,3));
 			break;
 		}
-	}
+		ptr = ptr->next;
+	} while (ptr->next != NULL);
 }
 
 void dispSprites(void)
@@ -210,28 +245,32 @@ void dispSprites(void)
 	int i;
 	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	FIXED spritePos[XYZS];
-	for (i = 0; i < numDispSprites; i++) {
-		spritePos[X] = slMulFX(sprites[i].pos[X] - screenX, spriteScale);
-		spritePos[Y] = slMulFX(sprites[i].pos[Y] - screenY, spriteScale);
+	SpriteNode ptr = head;
+	while (ptr != NULL) {
+		spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, spriteScale);
+		spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
 		slPrintFX(spritePos[X], slLocate(0,4));
 		slPrintFX(spritePos[Y], slLocate(0,5));
-		slPrintFX(spriteScale, slLocate(0,6));
 		spritePos[S] = spriteScale;
-		slDispSprite(spritePos, &sprites[i].attr, sprites[i].ang);
+		slPrintFX(spriteScale, slLocate(0,6));
+		slDispSprite(spritePos, &ptr->sprite.attr, ptr->sprite.ang);
+		ptr = ptr->next;
 	}
 }
  
 void ss_main(void)
 {
+	int i;
+	
 	slInitSystem(TV_320x224,tex_sprites,1);
 	slTVOff();
 	set_sprite(pic_sprites, 3, tex_sprites);
 	initSprites();
 	initVDP2();
 	slTVOn();
-	sprites[0].pos[X] = toFIXED(50.0);
-	sprites[0].pos[Y] = toFIXED(50.0);
-	sprites[0].type = TYPE_CIRCLE;
+	for (i = 0; i < 50; i++) {
+		addSpriteNode(head, defaultSprite);
+	}
 	while(1) {
 		handleInput();
 		updateBG();
