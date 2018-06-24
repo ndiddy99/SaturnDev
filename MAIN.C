@@ -28,8 +28,7 @@ Add level begin/end animations
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
 SPRITE_INFO defaultSprite;
-const SPR_ATTR DEFAULT_ATTR = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
-SpriteNode head;
+SpriteNode headNode;
 
 #define STATE_FALLING 0
 #define STATE_RISING 1
@@ -40,6 +39,11 @@ FIXED scaleSpeed = toFIXED(0.0);
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
+#define SCREEN_BOUND_L toFIXED(-160)
+#define SCREEN_BOUND_R toFIXED(160)
+#define SCREEN_BOUND_T toFIXED(-112)
+#define SCREEN_BOUND_B toFIXED(112)
+
 
 //function prototypes
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
@@ -47,8 +51,10 @@ void handleInput(void);
 void initSprites(void);
 SpriteNode createSpriteNode();
 SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
+void deleteSpriteNode(SpriteNode head, SpriteNode node);	
 void initVDP2(void);
 void updateBG(void);
+Uint8 handleSpriteCollision(FIXED x, FIXED y);
 void handleGroundCollision(FIXED x, FIXED y);
 void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 void dispSprites(void);
@@ -84,9 +90,11 @@ void initSprites(void)
 	defaultSprite.pos[Z] = toFIXED(169);
 	defaultSprite.pos[S] = toFIXED(1.0); 
 	defaultSprite.ang = DEGtoANG(0.0);
-	defaultSprite.attr = DEFAULT_ATTR;
+	defaultSprite.attr = CIRCLE_ATTR;
 	defaultSprite.type = TYPE_CIRCLE;
-	head = addSpriteNode(NULL, defaultSprite);
+	defaultSprite.dx = toFIXED(0.0);
+	defaultSprite.dy = toFIXED(0.0);
+	headNode = addSpriteNode(NULL, defaultSprite);
 }
 
 SpriteNode createSpriteNode(void)
@@ -110,6 +118,28 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 		ptr->next = tmp;
 	}
 	return head;
+}
+
+void deleteSpriteNode(SpriteNode head, SpriteNode node)
+{
+	if (node->next != NULL) {
+		SpriteNode tmp = node->next;
+		node->sprite = tmp->sprite;
+		node->next = tmp->next;
+		free(tmp);
+	}
+	else {
+		if (head==node) {
+			free(node);
+			head = NULL;
+		}
+		else {
+			SpriteNode tmp = head;
+			while (tmp->next != node)
+				tmp = tmp->next;
+			tmp->next = NULL;
+		}
+	}
 }
 
 void initVDP2(void)
@@ -158,7 +188,8 @@ void updateBG(void)
 			scaleSpeed = toFIXED(0.05);
 		//	slPrintFX((screenX >> 4), slLocate(0,1));
 			//slPrintFX((screenY >> 4), slLocate(0,2));
-			handleGroundCollision((screenX >> 4), (screenY >> 4)); //divide by 16- 16 px per tile
+			if (!handleSpriteCollision(screenX, screenY))
+				handleGroundCollision((screenX >> 4), (screenY >> 4)); //divide by 16- 16 px per tile
 		}
 	}
 	else if (state == STATE_RISING) {
@@ -171,6 +202,46 @@ void updateBG(void)
 	}
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
+}
+
+Uint8 handleSpriteCollision(FIXED x, FIXED y)
+{
+	//if ball x > sprite x1 and < sprite x2 
+	SpriteNode ptr = headNode;
+	#define SPR_SIZE toFIXED(32)
+	while (ptr != NULL) {
+		switch (ptr->sprite.type) {
+			case TYPE_CIRCLE:
+				if (ptr->sprite.pos[X] - SPR_SIZE < x && ptr->sprite.pos[X] + SPR_SIZE > x) {
+					if (ptr->sprite.pos[Y] - SPR_SIZE < y && ptr->sprite.pos[Y] + SPR_SIZE > y) {
+						SPRITE_INFO tmp = defaultSprite;
+						tmp.attr = SHOT_ATTR;
+						tmp.type = TYPE_SHOT;
+						tmp.pos[X] = x;
+						tmp.pos[Y] = y;
+						if (abs(ptr->sprite.pos[X] - x) < toFIXED(2))
+							tmp.dx = toFIXED(0);
+						else if (ptr->sprite.pos[X] > x)
+							tmp.dx = toFIXED(-1);
+						else
+							tmp.dx = toFIXED(1);
+						
+						if (abs(ptr->sprite.pos[Y] - y) < toFIXED(2) && tmp.dx != toFIXED(0))
+							tmp.dy = toFIXED(0);
+						else if (ptr->sprite.pos[Y] < y)
+							tmp.dy = toFIXED(-1);
+						else
+							tmp.dy = toFIXED(1);
+						deleteSpriteNode(headNode, ptr);
+						addSpriteNode(headNode, tmp);
+						return 1;
+					}
+				}
+			break;
+		}
+		ptr = ptr->next;
+	}
+	return 0;
 }
 
 void handleGroundCollision(FIXED x, FIXED y) {
@@ -204,9 +275,8 @@ void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
 void updateSprites(void)
 {
 	int i;
-	FIXED dx, dy;
-	SpriteNode ptr = head;
-	do {
+	SpriteNode ptr = headNode;
+	while (ptr != NULL) {
 		switch(ptr->sprite.type) {
 		case TYPE_NULL:
 			break;
@@ -216,28 +286,34 @@ void updateSprites(void)
 				ptr->sprite.ang += DEGtoANG(10);
 			else
 				ptr->sprite.ang -= DEGtoANG(10);
-			dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
-			dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
-			ptr->sprite.pos[X] += dx;
-			ptr->sprite.pos[Y] += dy;
-			slPrint("Target X:", slLocate(0,0));
-			slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
-			slPrint("Target Y:", slLocate(0,1));
-			slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
-			slPrint("Angle:", slLocate(0,2));
-			slPrintFX(ptr->sprite.ang, slLocate(7,2));
+			ptr->sprite.dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
+			ptr->sprite.dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
+			ptr->sprite.pos[X] += ptr->sprite.dx;
+			ptr->sprite.pos[Y] += ptr->sprite.dy;
+			// slPrint("Target X:", slLocate(0,0));
+			// slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
+			// slPrint("Target Y:", slLocate(0,1));
+			// slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
+			// slPrint("Angle:", slLocate(0,2));
+//			slPrintHex(ptr->sprite.ang, slLocate(7,2));
 			if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
-				slPrint("zongo", slLocate(0,3));
-				ptr->sprite.pos[X] -= dx;
-				ptr->sprite.pos[Y] -= dy;
+				ptr->sprite.pos[X] -= ptr->sprite.dx;
+				ptr->sprite.pos[Y] -= ptr->sprite.dy;
 				ptr->sprite.ang += DEGtoANG(90);
 			}
-			else
-				slPrint("dongo", slLocate(0,3));
+			break;
+		case TYPE_SHOT:
+			ptr->sprite.pos[X] += ptr->sprite.dx;
+			ptr->sprite.pos[Y] += ptr->sprite.dy;
+			//todo: collision detection here
+			if (abs(ptr->sprite.pos[X] - screenX) > SCREEN_BOUND_R || //remove shot sprite if it goes offscreen
+				abs(ptr->sprite.pos[Y] - screenY) > SCREEN_BOUND_B) {
+					deleteSpriteNode(headNode, ptr);
+				}
 			break;
 		}
 		ptr = ptr->next;
-	} while (ptr->next != NULL);
+	}
 }
 
 void dispSprites(void)
@@ -245,15 +321,15 @@ void dispSprites(void)
 	int i;
 	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	FIXED spritePos[XYZS];
-	SpriteNode ptr = head;
+	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
 		spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, spriteScale);
 		spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
-		slPrintFX(spritePos[X], slLocate(0,4));
-		slPrintFX(spritePos[Y], slLocate(0,5));
+		//slPrintFX(spritePos[X], slLocate(0,4));
+		//slPrintFX(spritePos[Y], slLocate(0,5));
 		spritePos[S] = spriteScale;
-		slPrintFX(spriteScale, slLocate(0,6));
-		slDispSprite(spritePos, &ptr->sprite.attr, ptr->sprite.ang);
+		//slPrintFX(spriteScale, slLocate(0,6));
+		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(0)); //todo: figure out why weird angle behavior happens
 		ptr = ptr->next;
 	}
 }
@@ -268,8 +344,8 @@ void ss_main(void)
 	initSprites();
 	initVDP2();
 	slTVOn();
-	for (i = 0; i < 50; i++) {
-		addSpriteNode(head, defaultSprite);
+	for (i = 0; i < 5; i++) {
+		addSpriteNode(headNode, defaultSprite);
 	}
 	while(1) {
 		handleInput();
