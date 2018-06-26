@@ -36,14 +36,14 @@ C:\saturn\sgl302j/lib\libsgl.a(sglB021.o)
                               main.o (slColorCalcOn)
 C:\saturn\sgl302j/lib\libsgl.a(sglB015.o)
                               main.o (slScrAutoDisp)
-C:\saturn\sgl302j/lib\libsgl.a(sglB054.o)
-                              main.o (slZoomR)
 C:\saturn\sgl302j/lib\libsgl.a(sglA06.o)
                               main.o (slMulFX)
-C:\saturn\sgl302j/lib\libsgl.a(sglI01.o)
-                              main.o (slSynch)
 C:\saturn\sgl302j/lib\libsgl.a(sglA01.o)
                               main.o (slSin)
+C:\saturn\sgl302j/lib\libsgl.a(sglB054.o)
+                              main.o (slZoomR)
+C:\saturn\sgl302j/lib\libsgl.a(sglI01.o)
+                              main.o (slSynch)
 C:\saturn\sgl302j/lib\libsgl.a(sglA07.o)
                               main.o (slDivFX)
 C:\saturn\sgl302j/lib\libsgl.a(sglC06.o)
@@ -145,401 +145,403 @@ SLSTART         0x06004000       0x30
                 0x06004002                slStartSGL
                 0x06004000                SGL_Start
 
-.text           0x06004040     0x23f0
+.text           0x06004040     0x2550
  *(.text)
  .text          0x06004040       0x50 C:\saturn\sgl302j\SAMPLE\common/cinit.o
                 0x06004040                main
- .text          0x06004090      0xb70 main.o
-                0x06004ac0                ss_main
-                0x060048b0                updateSprites
+ .text          0x06004090      0xcd0 main.o
+                0x06004c20                ss_main
+                0x06004a00                updateSprites
                 0x06004330                initVDP2
                 0x060040b0                handleInput
-                0x060047d0                updateBG
+                0x06004890                updateBG
                 0x06004160                createSpriteNode
                 0x06004210                initSprites
-                0x06004090                SHOT_ATTR
+                0x0600409c                SHOT_ATTR
                 0x06004500                handleSpriteCollision
-                0x0600409a                CIRCLE_ATTR
-                0x060046e0                handleGroundCollision
+                0x06004090                SPR_SIZE
+                0x060040a6                CIRCLE_ATTR
+                0x060047a0                handleGroundCollision
                 0x060042a0                deleteSpriteNode
-                0x06004680                writeBlock
+                0x06004740                writeBlock
+                0x06004970                checkShotCollision
                 0x06004180                addSpriteNode
-                0x06004a30                dispSprites
- .text          0x06004c00      0x100 scrollfunctions.o
-                0x06004cb0                MapRead
-                0x06004cd0                Pal2CRAM
-                0x06004c20                Map2VRAM
-                0x06004c80                MapWrite
-                0x06004c00                Cel2VRAM
- .text          0x06004d00      0x128 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
-                0x06004d00                slInitSystem
- *fill*         0x06004e28        0x8 00
- .text          0x06004e30       0xc0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
-                0x06004eb0                __main
-                0x06004e30                __do_global_dtors
-                0x06004e70                __do_global_ctors
- .text          0x06004ef0       0x80 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftrt_n.o)
-                0x06004ef0                __ashrsi3
- .text          0x06004f70       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
-                0x06004f90                free
-                0x06004f70                malloc
- .text          0x06004fb0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memcpy.o)
-                0x06004fb0                memcpy
- .text          0x06005050       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
-                0x06005050                atexit
- .text          0x060050f0       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
-                0x060050f0                _global_impure_ptr
- .text          0x06005100      0x680 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
-                0x06005100                _malloc_r
- .text          0x06005780      0x3b0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
-                0x06005780                _malloc_trim_r
-                0x06005880                _free_r
- .text          0x06005b30       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
-                0x06005b30                __malloc_lock
-                0x06005b40                __malloc_unlock
- .text          0x06005b50       0x50 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
-                0x06005b50                _sbrk_r
- .text          0x06005ba0      0x430 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
-                0x06005d50                _exit
-                0x06005d90                _getpid
-                0x06005e10                _utime
-                0x06005be0                _write
-                0x06005ba0                _read
-                0x06005d30                _unlink
-                0x06005cf0                _open
-                0x06005db0                _stat
-                0x06005d40                isatty
-                0x06005e50                _wait
-                0x06005d70                _kill
-                0x06005dd0                _chmod
-                0x06005e90                _execv
-                0x06005e70                _execve
-                0x06005f90                __setup_argv_and_call_main
-                0x06005ee0                _gettimeofday
-                0x06005c20                _link
-                0x06005da0                _raise
-                0x06005d10                _creat
-                0x06005eb0                _pipe
-                0x06005df0                _chown
-                0x06005bc0                _lseek
-                0x06005c00                _close
-                0x06005ed0                _times
-                0x06005cd0                _fstat
-                0x06005e30                _fork
-                0x06005c50                _sbrk
- .text          0x06005fd0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(trap.o)
-                0x06005fd0                __trap34
- .text          0x06005ff0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
-                0x06005ff0                abort
- .text          0x06006010      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
-                0x060060f0                _raise_r
-                0x060062b0                __sigtramp
-                0x06006250                raise
-                0x06006290                _init_signal
-                0x060061d0                __sigtramp_r
-                0x06006270                signal
-                0x06006060                _signal_r
-                0x06006010                _init_signal_r
- .text          0x060062d0       0x60 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
-                0x06006320                _getpid_r
-                0x060062d0                _kill_r
- .text          0x06006330       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftlt.o)
-                0x06006330                __ashlsi3
- .text          0x060063c0       0x70 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_udivsi3.o)
-                0x060063e2                __udivsi3
+                0x06004b90                dispSprites
+ .text          0x06004d60      0x100 scrollfunctions.o
+                0x06004e10                MapRead
+                0x06004e30                Pal2CRAM
+                0x06004d80                Map2VRAM
+                0x06004de0                MapWrite
+                0x06004d60                Cel2VRAM
+ .text          0x06004e60      0x128 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
+                0x06004e60                slInitSystem
+ *fill*         0x06004f88        0x8 00
+ .text          0x06004f90       0xc0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
+                0x06005010                __main
+                0x06004f90                __do_global_dtors
+                0x06004fd0                __do_global_ctors
+ .text          0x06005050       0x80 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftrt_n.o)
+                0x06005050                __ashrsi3
+ .text          0x060050d0       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
+                0x060050f0                free
+                0x060050d0                malloc
+ .text          0x06005110       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memcpy.o)
+                0x06005110                memcpy
+ .text          0x060051b0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
+                0x060051b0                atexit
+ .text          0x06005250       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
+                0x06005250                _global_impure_ptr
+ .text          0x06005260      0x680 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+                0x06005260                _malloc_r
+ .text          0x060058e0      0x3b0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
+                0x060058e0                _malloc_trim_r
+                0x060059e0                _free_r
+ .text          0x06005c90       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
+                0x06005c90                __malloc_lock
+                0x06005ca0                __malloc_unlock
+ .text          0x06005cb0       0x50 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
+                0x06005cb0                _sbrk_r
+ .text          0x06005d00      0x430 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+                0x06005eb0                _exit
+                0x06005ef0                _getpid
+                0x06005f70                _utime
+                0x06005d40                _write
+                0x06005d00                _read
+                0x06005e90                _unlink
+                0x06005e50                _open
+                0x06005f10                _stat
+                0x06005ea0                isatty
+                0x06005fb0                _wait
+                0x06005ed0                _kill
+                0x06005f30                _chmod
+                0x06005ff0                _execv
+                0x06005fd0                _execve
+                0x060060f0                __setup_argv_and_call_main
+                0x06006040                _gettimeofday
+                0x06005d80                _link
+                0x06005f00                _raise
+                0x06005e70                _creat
+                0x06006010                _pipe
+                0x06005f50                _chown
+                0x06005d20                _lseek
+                0x06005d60                _close
+                0x06006030                _times
+                0x06005e30                _fstat
+                0x06005f90                _fork
+                0x06005db0                _sbrk
+ .text          0x06006130       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(trap.o)
+                0x06006130                __trap34
+ .text          0x06006150       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
+                0x06006150                abort
+ .text          0x06006170      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
+                0x06006250                _raise_r
+                0x06006410                __sigtramp
+                0x060063b0                raise
+                0x060063f0                _init_signal
+                0x06006330                __sigtramp_r
+                0x060063d0                signal
+                0x060061c0                _signal_r
+                0x06006170                _init_signal_r
+ .text          0x06006430       0x60 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
+                0x06006480                _getpid_r
+                0x06006430                _kill_r
+ .text          0x06006490       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftlt.o)
+                0x06006490                __ashlsi3
+ .text          0x06006520       0x70 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_udivsi3.o)
+                0x06006542                __udivsi3
  *(.strings)
-                0x06006430                __etext = .
+                0x06006590                __etext = .
 
-SLPROG          0x06006440    0x10050
-                0x06006440                __slprog_start = .
+SLPROG          0x060065a0    0x10050
+                0x060065a0                __slprog_start = .
  *(SLPROG)
- SLPROG         0x06006440     0x6540 C:\saturn\sgl302j/lib/sglarea.o
-                0x0600645c                SpriteBuf
-                0x06006480                RemainEvent
-                0x0600644c                SortList
-                0x0600644a                MaxPolygons
-                0x06006468                CommandBuf
-                0x0600647c                MaxWorks
-                0x0600647e                WorkSize
-                0x06006474                PCM_WkSize
-                0x0600646c                CLOfstBuf
-                0x06006580                RemainWork
-                0x06006470                PCM_Work
-                0x06006440                MasterStack
-                0x06006444                SlaveStack
-                0x06006448                MaxVertices
-                0x06006478                MaxEvents
-                0x06006458                Zbuffer
-                0x06006460                SpriteBufSize
-                0x06008980                WorkBuf
-                0x06006454                TransList
-                0x06006464                Pbuffer
-                0x06006450                SortListSize
-                0x0600647a                EventSize
-                0x06006980                EventBuf
- SLPROG         0x0600c980      0xfc8 C:\saturn\sgl302j/lib\libsgl.a(sglH00.o)
-                0x0600ca1c                slSetPortData1
-                0x0600ca0c                slGetPortData1
-                0x0600d1fa                slSetPortMode1
-                0x0600d434                Smpc_Status
-                0x0600c9d2                slSetPortDir2
-                0x0600d018                slSmpcCashSend
-                0x0600ca38                slGetPortSelect1
-                0x0600ce1e                slIntBackCancel
-                0x0600cad0                slSetPortExt1
-                0x0600d1e0                slGetPortMode1
-                0x0600d0d4                slSmpcCashBlow
-                0x0600d3c4                slRequestCommand
-                0x0600d464                SmpcStatusBuf
-                0x0600ca26                slSetPortData2
-                0x0600cd86                slSetResultBuffer
-                0x0600cabc                slGetPortExt1
-                0x0600cb00                slSetPortExt2
-                0x0600c9a0                slGetPortDir2
-                0x0600cac6                slGetPortExt2
-                0x0600ce52                slClearReset
-                0x0600ce48                slCheckReset
-                0x0600c9a8                slSetPortDir1
-                0x0600ca80                slSetPortSelect2
-                0x0600ca4c                slSetPortSelect1
-                0x0600d1ec                slGetPortMode2
-                0x0600ca42                slGetPortSelect2
-                0x0600c998                slGetPortDir1
-                0x0600ca14                slGetPortData2
-                0x0600d1ba                slSetOptimize
-                0x0600d1b0                slGetOptimize
-                0x0600cc74                slSmpcDirectAccess
-                0x0600d442                Per_Connect1
-                0x0600ccf4                slInitPeripheral
-                0x0600ce12                slCheckIntBackSet
-                0x0600d443                Per_Connect2
-                0x0600d43c                Smpc_Peripheral
-                0x0600d238                slSetPortMode2
-                0x0600d438                Smpc_Result
- *fill*         0x0600d948        0x8 00
- SLPROG         0x0600d950       0x1e C:\saturn\sgl302j/lib\libsgl.a(sglB002.o)
-                0x0600d950                slColRAMMode
- *fill*         0x0600d96e        0x2 00
- SLPROG         0x0600d970        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB016.o)
-                0x0600d970                slBack1ColSet
- *fill*         0x0600d97c        0x4 00
- SLPROG         0x0600d980       0x70 C:\saturn\sgl302j/lib\libsgl.a(sglB038.o)
-                0x0600d980                slRparaInitSet
- SLPROG         0x0600d9f0      0x114 C:\saturn\sgl302j/lib\libsgl.a(sglB200.o)
-                0x0600d9fc                slCharNbg0
-                0x0600da42                slPageRbg0
-                0x0600da58                slPageNbg1
-                0x0600da08                slCharNbg1
-                0x0600da74                slPageNbg0
-                0x0600da60                slPageNbg2
-                0x0600da68                slPageNbg3
-                0x0600da14                slCharNbg2
-                0x0600da2a                slCharNbg3
-                0x0600d9f0                slCharRbg0
- *fill*         0x0600db04        0xc 00
- SLPROG         0x0600db10        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB059.o)
-                0x0600db10                slPlaneRA
- *fill*         0x0600db1c        0x4 00
- SLPROG         0x0600db20       0xd4 C:\saturn\sgl302j/lib\libsgl.a(sglB035.o)
-                0x0600db20                sl1MapRA
-                0x0600dbb2                rbank_set
- *fill*         0x0600dbf4        0xc 00
- SLPROG         0x0600dc00        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB047.o)
-                0x0600dc00                slOverRA
- *fill*         0x0600dc0c        0x4 00
- SLPROG         0x0600dc10       0x34 C:\saturn\sgl302j/lib\libsgl.a(sglB079.o)
-                0x0600dc10                slDispCenterR
- *fill*         0x0600dc44        0xc 00
- SLPROG         0x0600dc50       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglB078.o)
-                0x0600dc50                slLookR
- SLPROG         0x0600dc70        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB056.o)
-                0x0600dc70                slPlaneNbg1
+ SLPROG         0x060065a0     0x6540 C:\saturn\sgl302j/lib/sglarea.o
+                0x060065bc                SpriteBuf
+                0x060065e0                RemainEvent
+                0x060065ac                SortList
+                0x060065aa                MaxPolygons
+                0x060065c8                CommandBuf
+                0x060065dc                MaxWorks
+                0x060065de                WorkSize
+                0x060065d4                PCM_WkSize
+                0x060065cc                CLOfstBuf
+                0x060066e0                RemainWork
+                0x060065d0                PCM_Work
+                0x060065a0                MasterStack
+                0x060065a4                SlaveStack
+                0x060065a8                MaxVertices
+                0x060065d8                MaxEvents
+                0x060065b8                Zbuffer
+                0x060065c0                SpriteBufSize
+                0x06008ae0                WorkBuf
+                0x060065b4                TransList
+                0x060065c4                Pbuffer
+                0x060065b0                SortListSize
+                0x060065da                EventSize
+                0x06006ae0                EventBuf
+ SLPROG         0x0600cae0      0xfc8 C:\saturn\sgl302j/lib\libsgl.a(sglH00.o)
+                0x0600cb7c                slSetPortData1
+                0x0600cb6c                slGetPortData1
+                0x0600d35a                slSetPortMode1
+                0x0600d594                Smpc_Status
+                0x0600cb32                slSetPortDir2
+                0x0600d178                slSmpcCashSend
+                0x0600cb98                slGetPortSelect1
+                0x0600cf7e                slIntBackCancel
+                0x0600cc30                slSetPortExt1
+                0x0600d340                slGetPortMode1
+                0x0600d234                slSmpcCashBlow
+                0x0600d524                slRequestCommand
+                0x0600d5c4                SmpcStatusBuf
+                0x0600cb86                slSetPortData2
+                0x0600cee6                slSetResultBuffer
+                0x0600cc1c                slGetPortExt1
+                0x0600cc60                slSetPortExt2
+                0x0600cb00                slGetPortDir2
+                0x0600cc26                slGetPortExt2
+                0x0600cfb2                slClearReset
+                0x0600cfa8                slCheckReset
+                0x0600cb08                slSetPortDir1
+                0x0600cbe0                slSetPortSelect2
+                0x0600cbac                slSetPortSelect1
+                0x0600d34c                slGetPortMode2
+                0x0600cba2                slGetPortSelect2
+                0x0600caf8                slGetPortDir1
+                0x0600cb74                slGetPortData2
+                0x0600d31a                slSetOptimize
+                0x0600d310                slGetOptimize
+                0x0600cdd4                slSmpcDirectAccess
+                0x0600d5a2                Per_Connect1
+                0x0600ce54                slInitPeripheral
+                0x0600cf72                slCheckIntBackSet
+                0x0600d5a3                Per_Connect2
+                0x0600d59c                Smpc_Peripheral
+                0x0600d398                slSetPortMode2
+                0x0600d598                Smpc_Result
+ *fill*         0x0600daa8        0x8 00
+ SLPROG         0x0600dab0       0x1e C:\saturn\sgl302j/lib\libsgl.a(sglB002.o)
+                0x0600dab0                slColRAMMode
+ *fill*         0x0600dace        0x2 00
+ SLPROG         0x0600dad0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB016.o)
+                0x0600dad0                slBack1ColSet
+ *fill*         0x0600dadc        0x4 00
+ SLPROG         0x0600dae0       0x70 C:\saturn\sgl302j/lib\libsgl.a(sglB038.o)
+                0x0600dae0                slRparaInitSet
+ SLPROG         0x0600db50      0x114 C:\saturn\sgl302j/lib\libsgl.a(sglB200.o)
+                0x0600db5c                slCharNbg0
+                0x0600dba2                slPageRbg0
+                0x0600dbb8                slPageNbg1
+                0x0600db68                slCharNbg1
+                0x0600dbd4                slPageNbg0
+                0x0600dbc0                slPageNbg2
+                0x0600dbc8                slPageNbg3
+                0x0600db74                slCharNbg2
+                0x0600db8a                slCharNbg3
+                0x0600db50                slCharRbg0
+ *fill*         0x0600dc64        0xc 00
+ SLPROG         0x0600dc70        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB059.o)
+                0x0600dc70                slPlaneRA
  *fill*         0x0600dc7c        0x4 00
- SLPROG         0x0600dc80       0xb4 C:\saturn\sgl302j/lib\libsgl.a(sglB032.o)
-                0x0600dc80                slMapNbg1
- *fill*         0x0600dd34        0xc 00
- SLPROG         0x0600dd40        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB071.o)
-                0x0600dd40                slScrPosNbg1
- *fill*         0x0600dd4c        0x4 00
- SLPROG         0x0600dd50        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB063.o)
-                0x0600dd50                slPriority
- *fill*         0x0600dd5c        0x4 00
- SLPROG         0x0600dd60       0x10 C:\saturn\sgl302j/lib\libsgl.a(sglB020.o)
-                0x0600dd60                slColorCalc
- SLPROG         0x0600dd70        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB023.o)
-                0x0600dd70                slColRate
- *fill*         0x0600dd7c        0x4 00
- SLPROG         0x0600dd80        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB021.o)
-                0x0600dd80                slColorCalcOn
- *fill*         0x0600dd8c        0x4 00
- SLPROG         0x0600dd90      0x40c C:\saturn\sgl302j/lib\libsgl.a(sglB015.o)
-                0x0600dd90                slScrAutoDisp
- *fill*         0x0600e19c        0x4 00
- SLPROG         0x0600e1a0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB054.o)
-                0x0600e1a0                slZoomR
- *fill*         0x0600e1ac        0x4 00
- SLPROG         0x0600e1b0        0xa C:\saturn\sgl302j/lib\libsgl.a(sglA06.o)
-                0x0600e1b0                slMulFX
- *fill*         0x0600e1ba        0x6 00
- SLPROG         0x0600e1c0      0x3a4 C:\saturn\sgl302j/lib\libsgl.a(sglI01.o)
-                0x0600e3aa                RetPCMBuf
-                0x0600e4e4                Sound_Buf
-                0x0600e1c0                slInitSynch
-                0x0600e2d0                slRandom
-                0x0600e444                PCM_Buf
-                0x0600e1da                slSynch
-                0x0600e2ee                PCM_EndCheck
- *fill*         0x0600e564        0xc 00
- SLPROG         0x0600e570     0x411e C:\saturn\sgl302j/lib\libsgl.a(sglA01.o)
-                0x0600e64c                sin_cos_index_tbl
-                0x0600e570                slSin
-                0x0600e68c                sin_tbl
-                0x0600e5b8                GetSinCos
-                0x0600e594                slCos
- *fill*         0x0601268e        0x2 00
- SLPROG         0x06012690       0x14 C:\saturn\sgl302j/lib\libsgl.a(sglA07.o)
-                0x06012690                slDivFX
- *fill*         0x060126a4        0xc 00
- SLPROG         0x060126b0       0xfa C:\saturn\sgl302j/lib\libsgl.a(sglC06.o)
-                0x060126b0                slDispSprite
- *fill*         0x060127aa        0x6 00
- SLPROG         0x060127b0       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglB001.o)
-                0x060127b0                slTVOn
-                0x060127ba                slTVOff
- SLPROG         0x060127d0       0x84 C:\saturn\sgl302j/lib\libsgl.a(sglD00.o)
-                0x060127d0                slDMACopy
-                0x060127d0                slCpuDMACopy
-                0x0601282a                slCashPurge
-                0x0601282a                CSH_AllClr
- *fill*         0x06012854        0xc 00
- SLPROG         0x06012860      0x470 C:\saturn\sgl302j/lib\libsgl.a(sglH02.o)
-                0x06012c50                smpc_pfr_tbl
-                0x06012c90                smpc_ptf_tbl
- SLPROG         0x06012cd0       0x60 C:\saturn\sgl302j/lib\libsgl.a(sglH04.o)
-                0x06012cfa                slComPrmSetTime
-                0x06012cd0                slComPrmIntBack
-                0x06012ce4                slComPrmSetMemory
- SLPROG         0x06012d30       0x40 C:\saturn\sgl302j/lib\libsgl.a(sglC20.o)
-                0x06012d30                SpriteEntry
- SLPROG         0x06012d70       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglA00.o)
-                0x06012d84                get_imask
-                0x06012d70                set_imask
-                0x06012d70                _builtin_set_imask
-                0x06012d84                _builtin_get_imask
- SLPROG         0x06012d90       0x74 C:\saturn\sgl302j/lib\libsgl.a(sglJ00.o)
-                0x06012d90                InitSlaveSH
-                0x06012df8                SlaveCommand
- *fill*         0x06012e04        0xc 00
- SLPROG         0x06012e10      0x42c C:\saturn\sgl302j/lib\libsgl.a(sglA20.o)
-                0x06012e10                slInitMatrix
-                0x06012e2e                slUnitMatrix
-                0x06012e1a                slPushUnitMatrix
- *fill*         0x0601323c        0x4 00
- SLPROG         0x06013240      0xbd0 C:\saturn\sgl302j/lib\libsgl.a(sglB000.o)
-                0x06013240                slInitScroll
-                0x060134a0                TVSizeTbl
-                0x06013390                setASC_4to8
-                0x06013520                TVModeTbl
-                0x06013360                setASC_1to8
-                0x060136f8                SGL_ASCII_CG
- SLPROG         0x06013e10      0x3d0 C:\saturn\sgl302j/lib\libsgl.a(sglJ01.o)
-                0x06013e10                SlaveControl
-                0x060141cc                ErasePolygonData
- SLPROG         0x060141e0      0x75c C:\saturn\sgl302j/lib\libsgl.a(sglI00.o)
-                0x060144d0                slInitInterrupt
- *fill*         0x0601493c        0x4 00
- SLPROG         0x06014940      0x134 C:\saturn\sgl302j/lib\libsgl.a(sglC00.o)
-                0x06014940                slInitSprite
- *fill*         0x06014a74        0xc 00
- SLPROG         0x06014a80      0x140 C:\saturn\sgl302j/lib\libsgl.a(sglJ03.o)
-                0x06014a80                sbMakeDMATable
- SLPROG         0x06014bc0     0x12b8 C:\saturn\sgl302j/lib\libsgl.a(sglJ02.o)
-                0x06015df4                stvtc_1
-                0x06015b2c                stvtc_4
-                0x06015aec                SetPolygon
-                0x06015be4                stvtc_3
-                0x06015e1c                stvtc_0
-                0x06015af4                SetPosition
-                0x06014da8                sbCalcPolygon
-                0x06015ae0                SetTexture
-                0x06014bc0                sbMakePolygon
-                0x06015e08                stvtc_2
- *fill*         0x06015e78        0x8 00
- SLPROG         0x06015e80      0x470 C:\saturn\sgl302j/lib\libsgl.a(sglJ04.o)
-                0x06015f44                sbMakeRotSprite
-                0x06015ede                sbMakeSprite
- SLPROG         0x060162f0       0x3c C:\saturn\sgl302j/lib\libsgl.a(sglJ05.o)
-                0x060162f0                sbSortEntry
- *fill*         0x0601632c        0x4 00
- SLPROG         0x06016330       0xf0 C:\saturn\sgl302j/lib\libsgl.a(sglH03.o)
-                0x06016394                slSmpcIntBack
- SLPROG         0x06016420       0x6a C:\saturn\sgl302j/lib\libsgl.a(sglM01.o)
-                0x0601644c                slSetDepthTbl
-                0x0601647c                DepthWorkArea
-                0x06016420                slSetDepthLimit
-                0x0601648a                __slprog_end = .
+ SLPROG         0x0600dc80       0xd4 C:\saturn\sgl302j/lib\libsgl.a(sglB035.o)
+                0x0600dc80                sl1MapRA
+                0x0600dd12                rbank_set
+ *fill*         0x0600dd54        0xc 00
+ SLPROG         0x0600dd60        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB047.o)
+                0x0600dd60                slOverRA
+ *fill*         0x0600dd6c        0x4 00
+ SLPROG         0x0600dd70       0x34 C:\saturn\sgl302j/lib\libsgl.a(sglB079.o)
+                0x0600dd70                slDispCenterR
+ *fill*         0x0600dda4        0xc 00
+ SLPROG         0x0600ddb0       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglB078.o)
+                0x0600ddb0                slLookR
+ SLPROG         0x0600ddd0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB056.o)
+                0x0600ddd0                slPlaneNbg1
+ *fill*         0x0600dddc        0x4 00
+ SLPROG         0x0600dde0       0xb4 C:\saturn\sgl302j/lib\libsgl.a(sglB032.o)
+                0x0600dde0                slMapNbg1
+ *fill*         0x0600de94        0xc 00
+ SLPROG         0x0600dea0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB071.o)
+                0x0600dea0                slScrPosNbg1
+ *fill*         0x0600deac        0x4 00
+ SLPROG         0x0600deb0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB063.o)
+                0x0600deb0                slPriority
+ *fill*         0x0600debc        0x4 00
+ SLPROG         0x0600dec0       0x10 C:\saturn\sgl302j/lib\libsgl.a(sglB020.o)
+                0x0600dec0                slColorCalc
+ SLPROG         0x0600ded0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB023.o)
+                0x0600ded0                slColRate
+ *fill*         0x0600dedc        0x4 00
+ SLPROG         0x0600dee0        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB021.o)
+                0x0600dee0                slColorCalcOn
+ *fill*         0x0600deec        0x4 00
+ SLPROG         0x0600def0      0x40c C:\saturn\sgl302j/lib\libsgl.a(sglB015.o)
+                0x0600def0                slScrAutoDisp
+ *fill*         0x0600e2fc        0x4 00
+ SLPROG         0x0600e300        0xa C:\saturn\sgl302j/lib\libsgl.a(sglA06.o)
+                0x0600e300                slMulFX
+ *fill*         0x0600e30a        0x6 00
+ SLPROG         0x0600e310     0x411e C:\saturn\sgl302j/lib\libsgl.a(sglA01.o)
+                0x0600e3ec                sin_cos_index_tbl
+                0x0600e310                slSin
+                0x0600e42c                sin_tbl
+                0x0600e358                GetSinCos
+                0x0600e334                slCos
+ *fill*         0x0601242e        0x2 00
+ SLPROG         0x06012430        0xc C:\saturn\sgl302j/lib\libsgl.a(sglB054.o)
+                0x06012430                slZoomR
+ *fill*         0x0601243c        0x4 00
+ SLPROG         0x06012440      0x3a4 C:\saturn\sgl302j/lib\libsgl.a(sglI01.o)
+                0x0601262a                RetPCMBuf
+                0x06012764                Sound_Buf
+                0x06012440                slInitSynch
+                0x06012550                slRandom
+                0x060126c4                PCM_Buf
+                0x0601245a                slSynch
+                0x0601256e                PCM_EndCheck
+ *fill*         0x060127e4        0xc 00
+ SLPROG         0x060127f0       0x14 C:\saturn\sgl302j/lib\libsgl.a(sglA07.o)
+                0x060127f0                slDivFX
+ *fill*         0x06012804        0xc 00
+ SLPROG         0x06012810       0xfa C:\saturn\sgl302j/lib\libsgl.a(sglC06.o)
+                0x06012810                slDispSprite
+ *fill*         0x0601290a        0x6 00
+ SLPROG         0x06012910       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglB001.o)
+                0x06012910                slTVOn
+                0x0601291a                slTVOff
+ SLPROG         0x06012930       0x84 C:\saturn\sgl302j/lib\libsgl.a(sglD00.o)
+                0x06012930                slDMACopy
+                0x06012930                slCpuDMACopy
+                0x0601298a                slCashPurge
+                0x0601298a                CSH_AllClr
+ *fill*         0x060129b4        0xc 00
+ SLPROG         0x060129c0      0x470 C:\saturn\sgl302j/lib\libsgl.a(sglH02.o)
+                0x06012db0                smpc_pfr_tbl
+                0x06012df0                smpc_ptf_tbl
+ SLPROG         0x06012e30       0x60 C:\saturn\sgl302j/lib\libsgl.a(sglH04.o)
+                0x06012e5a                slComPrmSetTime
+                0x06012e30                slComPrmIntBack
+                0x06012e44                slComPrmSetMemory
+ SLPROG         0x06012e90       0x40 C:\saturn\sgl302j/lib\libsgl.a(sglC20.o)
+                0x06012e90                SpriteEntry
+ SLPROG         0x06012ed0       0x20 C:\saturn\sgl302j/lib\libsgl.a(sglA00.o)
+                0x06012ee4                get_imask
+                0x06012ed0                set_imask
+                0x06012ed0                _builtin_set_imask
+                0x06012ee4                _builtin_get_imask
+ SLPROG         0x06012ef0       0x74 C:\saturn\sgl302j/lib\libsgl.a(sglJ00.o)
+                0x06012ef0                InitSlaveSH
+                0x06012f58                SlaveCommand
+ *fill*         0x06012f64        0xc 00
+ SLPROG         0x06012f70      0x42c C:\saturn\sgl302j/lib\libsgl.a(sglA20.o)
+                0x06012f70                slInitMatrix
+                0x06012f8e                slUnitMatrix
+                0x06012f7a                slPushUnitMatrix
+ *fill*         0x0601339c        0x4 00
+ SLPROG         0x060133a0      0xbd0 C:\saturn\sgl302j/lib\libsgl.a(sglB000.o)
+                0x060133a0                slInitScroll
+                0x06013600                TVSizeTbl
+                0x060134f0                setASC_4to8
+                0x06013680                TVModeTbl
+                0x060134c0                setASC_1to8
+                0x06013858                SGL_ASCII_CG
+ SLPROG         0x06013f70      0x3d0 C:\saturn\sgl302j/lib\libsgl.a(sglJ01.o)
+                0x06013f70                SlaveControl
+                0x0601432c                ErasePolygonData
+ SLPROG         0x06014340      0x75c C:\saturn\sgl302j/lib\libsgl.a(sglI00.o)
+                0x06014630                slInitInterrupt
+ *fill*         0x06014a9c        0x4 00
+ SLPROG         0x06014aa0      0x134 C:\saturn\sgl302j/lib\libsgl.a(sglC00.o)
+                0x06014aa0                slInitSprite
+ *fill*         0x06014bd4        0xc 00
+ SLPROG         0x06014be0      0x140 C:\saturn\sgl302j/lib\libsgl.a(sglJ03.o)
+                0x06014be0                sbMakeDMATable
+ SLPROG         0x06014d20     0x12b8 C:\saturn\sgl302j/lib\libsgl.a(sglJ02.o)
+                0x06015f54                stvtc_1
+                0x06015c8c                stvtc_4
+                0x06015c4c                SetPolygon
+                0x06015d44                stvtc_3
+                0x06015f7c                stvtc_0
+                0x06015c54                SetPosition
+                0x06014f08                sbCalcPolygon
+                0x06015c40                SetTexture
+                0x06014d20                sbMakePolygon
+                0x06015f68                stvtc_2
+ *fill*         0x06015fd8        0x8 00
+ SLPROG         0x06015fe0      0x470 C:\saturn\sgl302j/lib\libsgl.a(sglJ04.o)
+                0x060160a4                sbMakeRotSprite
+                0x0601603e                sbMakeSprite
+ SLPROG         0x06016450       0x3c C:\saturn\sgl302j/lib\libsgl.a(sglJ05.o)
+                0x06016450                sbSortEntry
+ *fill*         0x0601648c        0x4 00
+ SLPROG         0x06016490       0xf0 C:\saturn\sgl302j/lib\libsgl.a(sglH03.o)
+                0x060164f4                slSmpcIntBack
+ SLPROG         0x06016580       0x6a C:\saturn\sgl302j/lib\libsgl.a(sglM01.o)
+                0x060165ac                slSetDepthTbl
+                0x060165dc                DepthWorkArea
+                0x06016580                slSetDepthLimit
+                0x060165ea                __slprog_end = .
 
-.tors           0x06016490        0x0
-                0x06016490                ___ctors = .
+.tors           0x060165f0        0x0
+                0x060165f0                ___ctors = .
  *(.ctors)
-                0x06016490                ___ctors_end = .
-                0x06016490                ___dtors = .
+                0x060165f0                ___ctors_end = .
+                0x060165f0                ___dtors = .
  *(.dtors)
-                0x06016490                ___dtors_end = .
+                0x060165f0                ___dtors_end = .
 
-.data           0x06016490     0x39d0
+.data           0x060165f0     0x39d0
  *(.data)
- .data          0x06016490       0x10 main.o
-                0x06016490                scale
- .data          0x060164a0     0x31b0 assets.o
-                0x06016ea0                cel_map1
-                0x06018ba0                pic_sprites
-                0x06018bb8                tex_sprites
-                0x060164a0                pal_map1
-                0x06018bd0                texture_sprites002
-                0x06019450                texture_sprites000
-                0x060193d0                texture_sprites001
-                0x060173a0                map_face
-                0x060166a0                map_map1
-                0x060171a0                pal_face
-                0x06017ba0                cel_face
- .data          0x06019650       0x80 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
-                0x06019650                IntPrioMask
- .data          0x060196d0      0x380 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
-                0x06019a4c                _impure_ptr
- .data          0x06019a50      0x410 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
-                0x06019a58                __malloc_av_
-                0x06019a54                __malloc_trim_threshold
-                0x06019a50                __malloc_sbrk_base
-                0x06019e60                __edata = .
+ .data          0x060165f0       0x10 main.o
+                0x060165f0                scale
+ .data          0x06016600     0x31b0 assets.o
+                0x06017000                cel_map1
+                0x06018d00                pic_sprites
+                0x06018d18                tex_sprites
+                0x06016600                pal_map1
+                0x06018d30                texture_sprites002
+                0x060195b0                texture_sprites000
+                0x06019530                texture_sprites001
+                0x06017500                map_face
+                0x06016800                map_map1
+                0x06017300                pal_face
+                0x06017d00                cel_face
+ .data          0x060197b0       0x80 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
+                0x060197b0                IntPrioMask
+ .data          0x06019830      0x380 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
+                0x06019bac                _impure_ptr
+ .data          0x06019bb0      0x410 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+                0x06019bb8                __malloc_av_
+                0x06019bb4                __malloc_trim_threshold
+                0x06019bb0                __malloc_sbrk_base
+                0x06019fc0                __edata = .
 
-.bss            0x06019e60       0xb4
-                0x06019e60                __bstart = .
+.bss            0x06019fc0       0xb4
+                0x06019fc0                __bstart = .
  *(.bss)
- .bss           0x06019e60       0x10 main.o
-                0x06019e60                screenY
-                0x06019e6c                state
-                0x06019e64                screenX
-                0x06019e68                scaleSpeed
- .bss           0x06019e70       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
- .bss           0x06019e80       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
- .bss           0x06019e90       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
-                0x06019ec0                __malloc_top_pad
-                0x06019e90                __malloc_current_mallinfo
-                0x06019ebc                __malloc_max_sbrked_mem
-                0x06019eb8                __malloc_max_total_mem
- .bss           0x06019ed0       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+ .bss           0x06019fc0       0x10 main.o
+                0x06019fc0                screenY
+                0x06019fcc                state
+                0x06019fc4                screenX
+                0x06019fc8                scaleSpeed
+ .bss           0x06019fd0       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
+ .bss           0x06019fe0       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
+ .bss           0x06019ff0       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+                0x0601a020                __malloc_top_pad
+                0x06019ff0                __malloc_current_mallinfo
+                0x0601a01c                __malloc_max_sbrked_mem
+                0x0601a018                __malloc_max_total_mem
+ .bss           0x0601a030       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
  *(COMMON)
- COMMON         0x06019ee0       0x2c main.o
+ COMMON         0x0601a040       0x2c main.o
                                   0x0 (size before relaxing)
-                0x06019ee0                defaultSprite
-                0x06019f08                headNode
- *fill*         0x06019f0c        0x4 00
- COMMON         0x06019f10        0x4 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+                0x0601a040                defaultSprite
+                0x0601a068                headNode
+ *fill*         0x0601a06c        0x4 00
+ COMMON         0x0601a070        0x4 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
                                   0x0 (size before relaxing)
-                0x06019f10                errno
-                0x06019f14                __bend = .
-                0x06019f14                _end = .
+                0x0601a070                errno
+                0x0601a074                __bend = .
+                0x0601a074                _end = .
 LOAD C:\saturn\sgl302j\SAMPLE\common/cinit.o
 LOAD C:\saturn\sgl302j/lib/sglarea.o
 LOAD main.o
@@ -551,20 +553,20 @@ LOAD c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../.
 LOAD c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a
 OUTPUT(sl.coff coff-sh)
 
-.comment        0x06019f20      0x200
- .comment       0x06019f20       0x20 C:\saturn\sgl302j\SAMPLE\common/cinit.o
- .comment       0x06019f40       0x20 main.o
- .comment       0x06019f60       0x20 assets.o
- .comment       0x06019f80       0x20 scrollfunctions.o
- .comment       0x06019fa0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
- .comment       0x06019fc0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
- .comment       0x06019fe0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
- .comment       0x0601a000       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
- .comment       0x0601a020       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
- .comment       0x0601a040       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
- .comment       0x0601a060       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
- .comment       0x0601a080       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
- .comment       0x0601a0a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
- .comment       0x0601a0c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
- .comment       0x0601a0e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
- .comment       0x0601a100       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
+.comment        0x0601a080      0x200
+ .comment       0x0601a080       0x20 C:\saturn\sgl302j\SAMPLE\common/cinit.o
+ .comment       0x0601a0a0       0x20 main.o
+ .comment       0x0601a0c0       0x20 assets.o
+ .comment       0x0601a0e0       0x20 scrollfunctions.o
+ .comment       0x0601a100       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
+ .comment       0x0601a120       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
+ .comment       0x0601a140       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
+ .comment       0x0601a160       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
+ .comment       0x0601a180       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+ .comment       0x0601a1a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
+ .comment       0x0601a1c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
+ .comment       0x0601a1e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
+ .comment       0x0601a200       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+ .comment       0x0601a220       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
+ .comment       0x0601a240       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
+ .comment       0x0601a260       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
