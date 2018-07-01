@@ -27,9 +27,6 @@ Add level begin/end animations
 
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
-SPRITE_INFO defaultSprite;
-SpriteNode headNode;
-
 #define STATE_FALLING 0
 #define STATE_RISING 1
 int state = 0;
@@ -48,10 +45,7 @@ FIXED screenY = toFIXED(0.0);
 //function prototypes
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
 void handleInput(void);
-void initSprites(void);
-SpriteNode createSpriteNode();
-SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
-void deleteSpriteNode(SpriteNode head, SpriteNode node);	
+void initSprites(void);	
 void initVDP2(void);
 void updateBG(void);
 Uint8 handleSpriteCollision(FIXED x, FIXED y);
@@ -95,51 +89,10 @@ void initSprites(void)
 	defaultSprite.type = TYPE_CIRCLE;
 	defaultSprite.dx = toFIXED(0.0);
 	defaultSprite.dy = toFIXED(0.0);
+	defaultSprite.state = STATE_NORM;
 	headNode = addSpriteNode(NULL, defaultSprite);
 }
 
-SpriteNode createSpriteNode(void)
-{
-	SpriteNode tmp = (SpriteNode)malloc(sizeof(struct SpriteList));
-	tmp->next = NULL;
-	return tmp;
-}
-
-SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
-{
-	SpriteNode tmp, ptr;
-	tmp = createSpriteNode();
-	tmp->sprite = data;
-	if (head == NULL)
-		head = tmp;
-	else {
-		ptr = head;
-		while (ptr->next != NULL)
-			ptr = ptr->next;
-		ptr->next = tmp;
-	}
-	return head;
-}
-
-void deleteSpriteNode(SpriteNode head, SpriteNode node)
-{
-	if (node->next != NULL) {
-		SpriteNode tmp = node->next;
-		node->sprite = tmp->sprite;
-		node->next = tmp->next;
-		free(tmp);
-	}
-	else if (head==node) {
-		free(node);
-		head = NULL;
-	}
-	else {
-		SpriteNode tmp = head;
-		while (tmp->next != node)
-			tmp = tmp->next;
-		tmp->next = NULL;
-	}
-}
 
 void initVDP2(void)
 {
@@ -179,6 +132,7 @@ void initVDP2(void)
 
 void updateBG(void)
 {
+	slPrint("updateBG", slLocate(0,0));
 	if (state == STATE_FALLING) {
 		scaleSpeed -= toFIXED(0.001);
 		scale += scaleSpeed;
@@ -205,6 +159,7 @@ void updateBG(void)
 
 Uint8 handleSpriteCollision(FIXED x, FIXED y)
 {
+	slPrint("handleSpriteCollision", slLocate(0,0));
 	//if ball x > sprite x1 and < sprite x2 
 	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
@@ -230,14 +185,8 @@ Uint8 handleSpriteCollision(FIXED x, FIXED y)
 							tmp.dy = toFIXED(-2);
 						else
 							tmp.dy = toFIXED(2);
-						addSpriteNode(headNode, tmp); //"scatter shot"
-						tmp.dx += slMulFX(toFIXED(2), slSin(DEGtoANG(15)));
-						tmp.dx += slMulFX(toFIXED(2), slCos(DEGtoANG(15)));
 						addSpriteNode(headNode, tmp);
-						tmp.dx += slMulFX(toFIXED(2), slSin(DEGtoANG(15)));
-						tmp.dx += slMulFX(toFIXED(2), slCos(DEGtoANG(15)));
-						addSpriteNode(headNode, tmp);
-						deleteSpriteNode(headNode, ptr);
+						deleteSpriteNode(&headNode, ptr);
 						return 1;
 					}
 				}
@@ -249,6 +198,7 @@ Uint8 handleSpriteCollision(FIXED x, FIXED y)
 }
 
 void handleGroundCollision(FIXED x, FIXED y) {
+	slPrint("handleGroundCollision", slLocate(0,0));
 	#define BLOCK_THRESHOLD_LOW toFIXED(0.2)
 	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
 	FIXED xDecimal = x & 0x0000ffff;
@@ -278,6 +228,7 @@ void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
 
 void updateSprites(void)
 {
+	slPrint("updateSprites", slLocate(0,0));
 	int i;
 	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
@@ -285,36 +236,47 @@ void updateSprites(void)
 		case TYPE_NULL:
 			break;
 		case TYPE_CIRCLE:
-			#define CIRCLE_SPEED toFIXED(1.0)
-			if (slRandom() > toFIXED(0.5))
-				ptr->sprite.ang += DEGtoANG(10);
-			else
-				ptr->sprite.ang -= DEGtoANG(10);
-			ptr->sprite.dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
-			ptr->sprite.dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
-			ptr->sprite.pos[X] += ptr->sprite.dx;
-			ptr->sprite.pos[Y] += ptr->sprite.dy;
-			// slPrint("Target X:", slLocate(0,0));
-			// slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
-			// slPrint("Target Y:", slLocate(0,1));
-			// slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
-			// slPrint("Angle:", slLocate(0,2));
-//			slPrintHex(ptr->sprite.ang, slLocate(7,2));
-			if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
-				ptr->sprite.pos[X] -= ptr->sprite.dx;
-				ptr->sprite.pos[Y] -= ptr->sprite.dy;
-				ptr->sprite.ang += DEGtoANG(90);
+			if (ptr->sprite.state != STATE_FALL) {
+				if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
+					ptr->sprite.state = STATE_FALL;
+					break;
+				}
+				#define CIRCLE_SPEED toFIXED(1.0)
+				if (slRandom() > toFIXED(0.5))
+					ptr->sprite.ang += DEGtoANG(10);
+				else
+					ptr->sprite.ang -= DEGtoANG(10);
+				ptr->sprite.dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
+				ptr->sprite.dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
+				ptr->sprite.pos[X] += ptr->sprite.dx;
+				ptr->sprite.pos[Y] += ptr->sprite.dy;
+				// slPrint("Target X:", slLocate(0,0));
+				// slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
+				// slPrint("Target Y:", slLocate(0,1));
+				// slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
+				// slPrint("Angle:", slLocate(0,2));
+	//			slPrintHex(ptr->sprite.ang, slLocate(7,2));
+				if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
+					ptr->sprite.pos[X] -= ptr->sprite.dx;
+					ptr->sprite.pos[Y] -= ptr->sprite.dy;
+					ptr->sprite.ang += DEGtoANG(90);
+				}
+			}
+			else {
+				if (ptr->sprite.pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
+					ptr->sprite.pos[S] -= toFIXED(0.02);
+				else
+					deleteSpriteNode(&headNode, ptr);
 			}
 			break;
 		case TYPE_SHOT:
 			ptr->sprite.pos[X] += ptr->sprite.dx;
 			ptr->sprite.pos[Y] += ptr->sprite.dy;
-			//todo: collision detection here
 			if (checkShotCollision(ptr))
-				deleteSpriteNode(headNode, ptr);
+				deleteSpriteNode(&headNode, ptr);
 			else if (abs(ptr->sprite.pos[X] - screenX) > SCREEN_BOUND_R || //remove shot sprite if it goes offscreen
 				abs(ptr->sprite.pos[Y] - screenY) > SCREEN_BOUND_B) {
-					deleteSpriteNode(headNode, ptr);
+					deleteSpriteNode(&headNode, ptr);
 				}
 			break;
 		}
@@ -324,6 +286,7 @@ void updateSprites(void)
 
 Uint8 checkShotCollision(SpriteNode node) 
 {
+	slPrint("checkShotCollision", slLocate(0,0));
 	SpriteNode ptr = headNode;
 	FIXED x = node->sprite.pos[X];
 	FIXED y = node->sprite.pos[Y];
@@ -333,7 +296,7 @@ Uint8 checkShotCollision(SpriteNode node)
 				case TYPE_CIRCLE:
 					if (ptr->sprite.pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && ptr->sprite.pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
 						if (ptr->sprite.pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && ptr->sprite.pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
-							deleteSpriteNode(headNode, ptr);
+							deleteSpriteNode(&headNode, ptr);
 							return 1;
 						}
 					}
@@ -348,6 +311,7 @@ Uint8 checkShotCollision(SpriteNode node)
 
 void dispSprites(void)
 {
+	slPrint("dispSprites", slLocate(0,0));
 	int i;
 	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	FIXED spritePos[XYZS];
@@ -357,7 +321,10 @@ void dispSprites(void)
 		spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
 		//slPrintFX(spritePos[X], slLocate(0,4));
 		//slPrintFX(spritePos[Y], slLocate(0,5));
-		spritePos[S] = spriteScale;
+		if (ptr->sprite.state != STATE_FALL)
+			spritePos[S] = spriteScale;
+		else
+			spritePos[S] = slMulFX(ptr->sprite.pos[S], spriteScale);
 		//slPrintFX(spriteScale, slLocate(0,6));
 		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(0)); //todo: figure out why weird angle behavior happens
 		ptr = ptr->next;
