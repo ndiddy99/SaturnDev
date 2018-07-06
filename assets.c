@@ -8,6 +8,10 @@
 #include "assets\map1.cel"
 #include "assets\map1.map"
 #include "assets\map1.pal"
+
+#include "assets\road.cel"
+#include "assets\road.map"
+#include "assets\road.pal"
 // #include "assets\YAMA.CEL"
 // #include "assets\YAMA.MAP"
 // #include "assets\YAMA.PAL"

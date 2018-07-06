@@ -1,7 +1,7 @@
 /*
 To-Dos:
-Make enemies killable by crushing and falling
-Draw block textures that more closely match Bound High's
+Make enemies killable by crushing and falling (done)
+Draw block textures that more closely match Bound High's (done for now)
 Make a level progression system (I'm thinking making a level function that is called for each level from the main function)
 Add score/lives
 Animate fake Chalvo
@@ -19,11 +19,16 @@ Add level begin/end animations
 #define		RBG0_CEL_ADR		VDP2_VRAM_A0
 #define		RBG0_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
 #define		RBG0_COL_ADR		( VDP2_COLRAM + 0x00200 )
-#define		RBG0_PAR_ADR		( VDP2_VRAM_A1 + 0x1fe00 )
+#define		RBG0_PAR_ADR		( VDP2_VRAM_A0 + 0x1fe00 )
 
 #define		NBG1_CEL_ADR		( VDP2_VRAM_B0)
-#define		NBG1_MAP_ADR		( VDP2_VRAM_B0 + 0x10000 )
+#define		NBG1_MAP_ADR		( VDP2_VRAM_A1)
 #define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00400 )
+
+#define		NBG2_CEL_ADR		( VDP2_VRAM_B0 + 0x1000)
+#define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x800 )
+#define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00600 )
+
 
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
@@ -127,7 +132,17 @@ void initVDP2(void)
 	slColRateNbg1(0x08); 
 	slColorCalcOn(NBG1ON);
 	
-	slScrAutoDisp(NBG0ON | NBG1ON | RBG0ON);	
+	//init road
+	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);
+	slPageNbg2((void *)NBG2_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
+	slPlaneNbg2(PL_SIZE_1x1);
+	slMapNbg2((void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR);
+	Cel2VRAM(cel_road, (void *)NBG2_CEL_ADR, 83 * 64 * 4);
+	Map2VRAM(map_road, (void *)NBG2_MAP_ADR, 64, 64, 3, 32);
+	Pal2CRAM(pal_road, (void *)NBG2_COL_ADR, 256);
+	slScrPosNbg2(toFIXED(0), toFIXED(0));
+	
+	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | RBG0ON);	
 }
 
 void updateBG(void)
