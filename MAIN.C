@@ -29,6 +29,9 @@ Add level begin/end animations
 #define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x800 )
 #define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00600 )
 
+#define		NBG3_CEL_ADR		( VDP2_VRAM_B1 + 0x2000)
+#define		NBG3_MAP_ADR		( VDP2_VRAM_A1 + 0x1000 )
+#define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00800 )
 
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
@@ -41,6 +44,8 @@ FIXED scaleSpeed = toFIXED(0.0);
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
+FIXED bg2X = toFIXED(0.0);
+FIXED bg2Y = toFIXED(0.0);
 #define SCREEN_BOUND_L toFIXED(-160)
 #define SCREEN_BOUND_R toFIXED(160)
 #define SCREEN_BOUND_T toFIXED(-112)
@@ -130,19 +135,31 @@ void initVDP2(void)
 	slPriorityNbg1(7);
 	slColorCalc(CC_RATE | CC_TOP | NBG1ON);
 	slColRateNbg1(0x08); 
-	slColorCalcOn(NBG1ON);
 	
-	//init road
+	//init clouds
 	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);
 	slPageNbg2((void *)NBG2_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
 	slPlaneNbg2(PL_SIZE_1x1);
 	slMapNbg2((void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR);
-	Cel2VRAM(cel_road, (void *)NBG2_CEL_ADR, 83 * 64 * 4);
-	Map2VRAM(map_road, (void *)NBG2_MAP_ADR, 64, 64, 3, 32);
-	Pal2CRAM(pal_road, (void *)NBG2_COL_ADR, 256);
+	Cel2VRAM(cel_cloud, (void *)NBG2_CEL_ADR, 11 * 64 * 4);
+	//offset parameter (32 here) seems to be # of tiles before start of this bg's tiles in that vram bank * 2
+	Map2VRAM(map_cloud, (void *)NBG2_MAP_ADR, 64, 64, 3, 32); 
+	Pal2CRAM(pal_cloud, (void *)NBG2_COL_ADR, 256);
 	slScrPosNbg2(toFIXED(0), toFIXED(0));
+	slColRateNbg2(0x08);
 	
-	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | RBG0ON);	
+	//init road
+	slCharNbg3(COL_TYPE_256, CHAR_SIZE_2x2);
+	slPageNbg3((void *)NBG3_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
+	slPlaneNbg3(PL_SIZE_1x1);
+	slMapNbg3((void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR);
+	Cel2VRAM(cel_road, (void *)NBG3_CEL_ADR, 83 * 64 * 4);
+	Map2VRAM(map_road, (void *)NBG3_MAP_ADR, 64, 64, 3, 64); 
+	Pal2CRAM(pal_road, (void *)NBG3_COL_ADR, 256);
+	slScrPosNbg3(toFIXED(0), toFIXED(0));
+	
+	slColorCalcOn(NBG1ON | NBG2ON);
+	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);	
 }
 
 void updateBG(void)
@@ -170,6 +187,9 @@ void updateBG(void)
 	}
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
+	bg2X += toFIXED(1.0);
+	bg2Y += toFIXED(1.0);
+	slScrPosNbg2(bg2X, bg2Y);
 }
 
 Uint8 handleSpriteCollision(FIXED x, FIXED y)

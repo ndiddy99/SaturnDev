@@ -12,6 +12,10 @@
 #include "assets\road.cel"
 #include "assets\road.map"
 #include "assets\road.pal"
+
+#include "assets\cloud.cel"
+#include "assets\cloud.map"
+#include "assets\cloud.pal"
 // #include "assets\YAMA.CEL"
 // #include "assets\YAMA.MAP"
 // #include "assets\YAMA.PAL"
