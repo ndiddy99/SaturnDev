@@ -9,6 +9,7 @@ typedef struct SpriteInfo {
 
 const SPR_ATTR CIRCLE_ATTR = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
 const SPR_ATTR SHOT_ATTR = SPR_ATTRIBUTE(1,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
+const SPR_ATTR PLAYER_ATTR = SPR_ATTRIBUTE(2,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); //used only for death animation
 #define TYPE_NULL 0
 #define TYPE_CIRCLE 1
 #define TYPE_SHOT 2

@@ -5,7 +5,7 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
 void deleteSpriteNode(SpriteNode* head, SpriteNode node);
 
 SPRITE_INFO defaultSprite;
-SpriteNode headNode;
+SpriteNode headNode = NULL;
 
 SpriteNode createSpriteNode(void)
 {
@@ -28,7 +28,7 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 			ptr = ptr->next;
 		ptr->next = tmp;
 	}
-	return head;
+	return tmp;
 }
 
 void deleteSpriteNode(SpriteNode* head, SpriteNode node)

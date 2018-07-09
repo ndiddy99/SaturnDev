@@ -37,7 +37,8 @@ Add level begin/end animations
 
 #define STATE_FALLING 0
 #define STATE_RISING 1
-int state = 0;
+#define STATE_DEAD 2
+int state = STATE_FALLING;
 
 FIXED scale = toFIXED(1.0);
 FIXED scaleSpeed = toFIXED(0.0);
@@ -59,16 +60,18 @@ void initSprites(void);
 void initVDP2(void);
 void updateBG(void);
 Uint8 handleSpriteCollision(FIXED x, FIXED y);
-void handleGroundCollision(FIXED x, FIXED y);
+Uint8 handleGroundCollision(FIXED x, FIXED y);
 void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 Uint8 checkShotCollision(SpriteNode node);
 void dispSprites(void);
 void ss_main(void);
 
-static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr)
+static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 {
+	TEXTURE *txptr;
+ 
 	for(; NbPicture-- > 0; pcptr++){
-		txptr += pcptr->texno;
+		txptr = texptr + pcptr->texno;
 		slDMACopy((void *)pcptr->pcsrc,
 			(void *)(SpriteVRAM + ((txptr->CGadr) << 3)),
 			(Uint32)((txptr->Hsize * txptr->Vsize * 4) >> (pcptr->cmode)));
@@ -78,14 +81,16 @@ static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr)
 void handleInput(void)
 {
 	Uint16 data = ~Smpc_Peripheral[0].data;
-	if (data & PER_DGT_KR)
-		screenX += toFIXED(2.0);
-	else if (data & PER_DGT_KL)
-		screenX -= toFIXED(2.0);
-	if (data & PER_DGT_KU)
-		screenY -= toFIXED(2.0);
-	else if (data & PER_DGT_KD)
-		screenY += toFIXED(2.0);
+	if (state != STATE_DEAD) {
+		if (data & PER_DGT_KR)
+			screenX += toFIXED(2.0);
+		else if (data & PER_DGT_KL)
+			screenX -= toFIXED(2.0);
+		if (data & PER_DGT_KU)
+			screenY -= toFIXED(2.0);
+		else if (data & PER_DGT_KD)
+			screenY += toFIXED(2.0);
+	}
 }
 
 void initSprites(void)
@@ -146,7 +151,7 @@ void initVDP2(void)
 	Map2VRAM(map_cloud, (void *)NBG2_MAP_ADR, 64, 64, 3, 32); 
 	Pal2CRAM(pal_cloud, (void *)NBG2_COL_ADR, 256);
 	slScrPosNbg2(toFIXED(0), toFIXED(0));
-	slColRateNbg2(0x08);
+	slColRateNbg2(0x05);
 	
 	//init road
 	slCharNbg3(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -164,6 +169,9 @@ void initVDP2(void)
 
 void updateBG(void)
 {
+	static SpriteNode playerNode;
+	static FIXED playerFallSpeed;
+	
 	slPrint("updateBG", slLocate(0,0));
 	if (state == STATE_FALLING) {
 		scaleSpeed -= toFIXED(0.001);
@@ -173,8 +181,19 @@ void updateBG(void)
 			scaleSpeed = toFIXED(0.05);
 		//	slPrintFX((screenX >> 4), slLocate(0,1));
 			//slPrintFX((screenY >> 4), slLocate(0,2));
-			if (!handleSpriteCollision(screenX, screenY))
-				handleGroundCollision((screenX >> 4), (screenY >> 4)); //divide by 16- 16 px per tile
+			if (!handleSpriteCollision(screenX, screenY)) {
+				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
+					state = STATE_DEAD;
+					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON); //turn off player's bg layer
+					SPRITE_INFO tmp = defaultSprite;
+					tmp.attr = PLAYER_ATTR;
+					tmp.type = TYPE_NULL;
+					tmp.pos[X] = screenX;
+					tmp.pos[Y] = screenY;
+					playerNode = addSpriteNode(headNode, tmp);
+					playerFallSpeed = toFIXED(0.0);
+				}
+			}
 		}
 	}
 	else if (state == STATE_RISING) {
@@ -185,8 +204,24 @@ void updateBG(void)
 			scaleSpeed = 0;
 		}
 	}
+	else if (state == STATE_DEAD) {
+		if (playerNode->sprite.pos[S] > toFIXED(0.0)) {
+			playerFallSpeed += toFIXED(0.005);
+			playerNode->sprite.pos[S] -= playerFallSpeed;
+			playerNode->sprite.ang += DEGtoANG(5);
+		}
+		else { //reset player pos
+			scale = toFIXED(1.0);
+			scaleSpeed = toFIXED(0.0);
+			screenX = toFIXED(0.0);
+			screenY = toFIXED(0.0);
+			state = STATE_FALLING;
+			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+		}
+	}
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
+	//cloud movement
 	bg2X += toFIXED(1.0);
 	bg2Y += toFIXED(1.0);
 	slScrPosNbg2(bg2X, bg2Y);
@@ -232,13 +267,14 @@ Uint8 handleSpriteCollision(FIXED x, FIXED y)
 	return 0;
 }
 
-void handleGroundCollision(FIXED x, FIXED y) {
+Uint8 handleGroundCollision(FIXED x, FIXED y) {
 	slPrint("handleGroundCollision", slLocate(0,0));
 	#define BLOCK_THRESHOLD_LOW toFIXED(0.2)
 	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
 	FIXED xDecimal = x & 0x0000ffff;
 	FIXED yDecimal = y & 0x0000ffff;
-	//todo: check for sprite collision here, make ground collision conditional upon sprite collision not happening
+	if (MapRead(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y)) == 0x0000) //if no ground
+		return 0;
 	if (xDecimal > BLOCK_THRESHOLD_HIGH || xDecimal < BLOCK_THRESHOLD_LOW) { //either less than .2 or greater than .8: trigger block to left and block
 		writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
 		writeBlock(fixedToUint16(x), fixedToUint16(y), 0x0000);
@@ -253,6 +289,7 @@ void handleGroundCollision(FIXED x, FIXED y) {
 		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW)
 			writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
 	}
+	return 1;
 }
 
 //when I have more block types, this should scan them to make sure they're breakable before breaking them
@@ -356,10 +393,12 @@ void dispSprites(void)
 		spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
 		//slPrintFX(spritePos[X], slLocate(0,4));
 		//slPrintFX(spritePos[Y], slLocate(0,5));
-		if (ptr->sprite.state != STATE_FALL)
-			spritePos[S] = spriteScale;
-		else
+		if (ptr->sprite.state == STATE_FALL)
 			spritePos[S] = slMulFX(ptr->sprite.pos[S], spriteScale);
+		else if (ptr->sprite.type == TYPE_NULL)
+			spritePos[S] = ptr->sprite.pos[S];
+		else
+			spritePos[S] = spriteScale;
 		//slPrintFX(spriteScale, slLocate(0,6));
 		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(0)); //todo: figure out why weird angle behavior happens
 		ptr = ptr->next;
