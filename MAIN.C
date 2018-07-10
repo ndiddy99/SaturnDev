@@ -99,7 +99,7 @@ void initSprites(void)
 	defaultSprite.pos[Y] = toFIXED(0.0);
 	defaultSprite.pos[Z] = toFIXED(169);
 	defaultSprite.pos[S] = toFIXED(1.0); 
-	defaultSprite.ang = DEGtoANG(0.0);
+	defaultSprite.ang = 0;
 	defaultSprite.attr = CIRCLE_ATTR;
 	defaultSprite.type = TYPE_CIRCLE;
 	defaultSprite.dx = toFIXED(0.0);
@@ -136,7 +136,7 @@ void initVDP2(void)
 	Cel2VRAM(cel_face, (void *)NBG1_CEL_ADR, 16 * 64 * 4);
 	Map2VRAM(map_face, (void *)NBG1_MAP_ADR, 64, 64, 2, 0);
 	Pal2CRAM(pal_face, (void *)NBG1_COL_ADR, 256);
-	slScrPosNbg1(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0));
+	slScrPosNbg1(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
 	slPriorityNbg1(7);
 	slColorCalc(CC_RATE | CC_TOP | NBG1ON);
 	slColRateNbg1(0x08); 
@@ -208,7 +208,7 @@ void updateBG(void)
 		if (playerNode->sprite.pos[S] > toFIXED(0.0)) {
 			playerFallSpeed += toFIXED(0.005);
 			playerNode->sprite.pos[S] -= playerFallSpeed;
-			playerNode->sprite.ang += DEGtoANG(5);
+			playerNode->sprite.ang += 5;
 		}
 		else { //reset player pos
 			scale = toFIXED(1.0);
@@ -217,6 +217,7 @@ void updateBG(void)
 			screenY = toFIXED(0.0);
 			state = STATE_FALLING;
 			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+			deleteSpriteNode(&headNode, playerNode);
 		}
 	}
 	slLookR(screenX, screenY);
@@ -313,25 +314,19 @@ void updateSprites(void)
 					ptr->sprite.state = STATE_FALL;
 					break;
 				}
-				#define CIRCLE_SPEED toFIXED(1.0)
 				if (slRandom() > toFIXED(0.5))
-					ptr->sprite.ang += DEGtoANG(10);
+					ptr->sprite.ang += 10;
 				else
-					ptr->sprite.ang -= DEGtoANG(10);
-				ptr->sprite.dx = slMulFX(CIRCLE_SPEED, slSin(ptr->sprite.ang));
-				ptr->sprite.dy = slMulFX(CIRCLE_SPEED, slCos(ptr->sprite.ang));
+					ptr->sprite.ang -= 10;
+				ptr->sprite.dx = slCos(DEGtoANG(ptr->sprite.ang));
+				ptr->sprite.dy = slSin(DEGtoANG(ptr->sprite.ang));
 				ptr->sprite.pos[X] += ptr->sprite.dx;
 				ptr->sprite.pos[Y] += ptr->sprite.dy;
-				// slPrint("Target X:", slLocate(0,0));
-				// slPrintFX(ptr->sprite.pos[X], slLocate(10,0));
-				// slPrint("Target Y:", slLocate(0,1));
-				// slPrintFX(ptr->sprite.pos[Y], slLocate(10,1));
-				// slPrint("Angle:", slLocate(0,2));
-	//			slPrintHex(ptr->sprite.ang, slLocate(7,2));
+				
 				if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
 					ptr->sprite.pos[X] -= ptr->sprite.dx;
 					ptr->sprite.pos[Y] -= ptr->sprite.dy;
-					ptr->sprite.ang += DEGtoANG(90);
+					ptr->sprite.ang += 90;
 				}
 			}
 			else {
@@ -400,7 +395,7 @@ void dispSprites(void)
 		else
 			spritePos[S] = spriteScale;
 		//slPrintFX(spriteScale, slLocate(0,6));
-		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(0)); //todo: figure out why weird angle behavior happens
+		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(ptr->sprite.ang));
 		ptr = ptr->next;
 	}
 }

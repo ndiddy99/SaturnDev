@@ -1,6 +1,6 @@
 typedef struct SpriteInfo {
 	FIXED pos[XYZS];
-	ANGLE ang;
+	Uint16 ang;
 	SPR_ATTR attr;
 	FIXED dx, dy;
 	Uint8 type;
