@@ -62,6 +62,8 @@ void updateBG(void);
 Uint8 handleSpriteCollision(FIXED x, FIXED y);
 Uint8 handleGroundCollision(FIXED x, FIXED y);
 void writeBlock(Uint16 x, Uint16 y, Uint16 data);
+void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy);
+void updateSprites(void);
 Uint8 checkShotCollision(SpriteNode node);
 void dispSprites(void);
 void ss_main(void);
@@ -243,19 +245,7 @@ Uint8 handleSpriteCollision(FIXED x, FIXED y)
 						tmp.type = TYPE_SHOT;
 						tmp.pos[X] = x;
 						tmp.pos[Y] = y;
-						if (abs(ptr->sprite.pos[X] - x) < toFIXED(2))
-							tmp.dx = toFIXED(0);
-						else if (ptr->sprite.pos[X] < x)
-							tmp.dx = toFIXED(-2);
-						else
-							tmp.dx = toFIXED(2);
-						
-						if (abs(ptr->sprite.pos[Y] - y) < toFIXED(2) && tmp.dx != toFIXED(0))
-							tmp.dy = toFIXED(0);
-						else if (ptr->sprite.pos[Y] < y)
-							tmp.dy = toFIXED(-2);
-						else
-							tmp.dy = toFIXED(2);
+						setShotVelocity(x, y, ptr->sprite.pos[X], ptr->sprite.pos[Y], &tmp.dx, &tmp.dy);
 						addSpriteNode(headNode, tmp);
 						deleteSpriteNode(&headNode, ptr);
 						return 1;
@@ -351,6 +341,22 @@ void updateSprites(void)
 	}
 }
 
+void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy) {
+	if (abs(spriteX - playerX) < toFIXED(2))
+		*dx = toFIXED(0);
+	else if (spriteX < playerX)
+		*dx = toFIXED(-2);
+	else
+		*dx = toFIXED(2);
+	
+	if (abs(spriteY - playerY) < toFIXED(2) && *dx != toFIXED(0))
+		*dy = toFIXED(0);
+	else if (spriteY < playerY)
+		*dy = toFIXED(-2);
+	else
+		*dy = toFIXED(2);	
+}
+
 Uint8 checkShotCollision(SpriteNode node) 
 {
 	slPrint("checkShotCollision", slLocate(0,0));
@@ -363,6 +369,13 @@ Uint8 checkShotCollision(SpriteNode node)
 				case TYPE_CIRCLE:
 					if (ptr->sprite.pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && ptr->sprite.pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
 						if (ptr->sprite.pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && ptr->sprite.pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
+							SPRITE_INFO tmp = defaultSprite;
+							tmp.attr = SHOT_ATTR;
+							tmp.type = TYPE_SHOT;
+							tmp.pos[X] = ptr->sprite.pos[X];
+							tmp.pos[Y] = ptr->sprite.pos[Y];
+							setShotVelocity(x, y, ptr->sprite.pos[X], ptr->sprite.pos[Y], &tmp.dx, &tmp.dy);
+							addSpriteNode(headNode, tmp);
 							deleteSpriteNode(&headNode, ptr);
 							return 1;
 						}
@@ -410,7 +423,7 @@ void ss_main(void)
 	initSprites();
 	initVDP2();
 	slTVOn();
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 25; i++) {
 		addSpriteNode(headNode, defaultSprite);
 	}
 	while(1) {
