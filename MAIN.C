@@ -43,6 +43,11 @@ int state = STATE_FALLING;
 FIXED scale = toFIXED(1.0);
 FIXED scaleSpeed = toFIXED(0.0);
 
+SPRITE_INFO defaultSprite;
+SpriteNode headNode = NULL;
+SpriteNode eye1;
+SpriteNode eye2;
+
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
 FIXED bg2X = toFIXED(0.0);
@@ -79,20 +84,41 @@ static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 			(Uint32)((txptr->Hsize * txptr->Vsize * 4) >> (pcptr->cmode)));
 	}
 }
-
+#define EYE_MAX_XPOS toFIXED(-7)
+#define EYE_MIN_XPOS toFIXED(-13)
+#define EYE_MAX_YPOS toFIXED(-10)
+#define EYE_MIN_YPOS toFIXED(0)
+#define EYE_MOVE_SPEED toFIXED(0.5)
+#define EYE_DISTANCE toFIXED(20)
 void handleInput(void)
 {
 	Uint16 data = ~Smpc_Peripheral[0].data;
 	if (state != STATE_DEAD) {
-		if (data & PER_DGT_KR)
+		if (data & PER_DGT_KR) {
 			screenX += toFIXED(2.0);
-		else if (data & PER_DGT_KL)
+			if (eye1->sprite.pos[X] < EYE_MAX_XPOS)
+				eye1->sprite.pos[X] += EYE_MOVE_SPEED;
+		}
+		else if (data & PER_DGT_KL) {
 			screenX -= toFIXED(2.0);
-		if (data & PER_DGT_KU)
+			if (eye1->sprite.pos[X] > EYE_MIN_XPOS)
+				eye1->sprite.pos[X] -= EYE_MOVE_SPEED;
+		}
+		if (data & PER_DGT_KU) {
 			screenY -= toFIXED(2.0);
-		else if (data & PER_DGT_KD)
+			if (eye1->sprite.pos[Y] > EYE_MAX_YPOS)
+				eye1->sprite.pos[Y] -= EYE_MOVE_SPEED;
+		}
+		else if (data & PER_DGT_KD) {
 			screenY += toFIXED(2.0);
+			if (eye1->sprite.pos[Y] < EYE_MIN_YPOS)
+				eye1->sprite.pos[Y] += EYE_MOVE_SPEED;
+		}
+		eye2->sprite.pos[X] = eye1->sprite.pos[X] + EYE_DISTANCE;
+		eye2->sprite.pos[Y] = eye1->sprite.pos[Y];
 	}
+	
+	
 }
 
 void initSprites(void)
@@ -108,6 +134,28 @@ void initSprites(void)
 	defaultSprite.dy = toFIXED(0.0);
 	defaultSprite.state = STATE_NORM;
 	headNode = addSpriteNode(NULL, defaultSprite);
+	//add eye sprites
+	SPRITE_INFO info = defaultSprite;
+	info.attr = SCLERA_ATTR;
+	info.type = TYPE_FACE;
+	info.pos[X] = toFIXED(-12);
+	info.pos[Y] = toFIXED(-8);
+	info.pos[Z] = toFIXED(160);
+	addSpriteNode(headNode, info);
+	info.pos[X] = toFIXED(11);
+	addSpriteNode(headNode, info);
+	info.pos[X] = 0;
+	info.pos[Y] = 0;
+	
+	info.attr = EYE_ATTR;
+	eye1 = addSpriteNode(headNode, info);
+	eye2 = addSpriteNode(headNode, info);
+	
+	eye1->sprite.pos[X] = toFIXED(-10);
+	eye1->sprite.pos[Y] = toFIXED(-7);
+	eye2->sprite.pos[X] = toFIXED(10);
+	eye2->sprite.pos[Y] = toFIXED(-7);
+	
 }
 
 
@@ -397,13 +445,27 @@ void dispSprites(void)
 	FIXED spritePos[XYZS];
 	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
-		spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, spriteScale);
-		spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
-		//slPrintFX(spritePos[X], slLocate(0,4));
-		//slPrintFX(spritePos[Y], slLocate(0,5));
+		while (state == STATE_DEAD && ptr->sprite.type == TYPE_FACE) {
+			if (ptr->next != NULL)
+				ptr = ptr->next;
+			else
+				break;
+		}
+		if (ptr->sprite.type == TYPE_FACE) {
+			spritePos[X] = ptr->sprite.pos[X];
+			spritePos[Y] = ptr->sprite.pos[Y];
+			spritePos[Z] = ptr->sprite.pos[Z];
+		}
+		else {
+			spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, spriteScale);
+			spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
+			spritePos[Z] = toFIXED(169);
+		}
+		slPrintFX(spritePos[X], slLocate(0,4));
+		slPrintFX(spritePos[Y], slLocate(0,5));
 		if (ptr->sprite.state == STATE_FALL)
 			spritePos[S] = slMulFX(ptr->sprite.pos[S], spriteScale);
-		else if (ptr->sprite.type == TYPE_NULL)
+		else if (ptr->sprite.type == TYPE_NULL || ptr->sprite.type == TYPE_FACE)
 			spritePos[S] = ptr->sprite.pos[S];
 		else
 			spritePos[S] = spriteScale;
@@ -419,7 +481,7 @@ void ss_main(void)
 	
 	slInitSystem(TV_320x224,tex_sprites,1);
 	slTVOff();
-	set_sprite(pic_sprites, 3, tex_sprites);
+	set_sprite(pic_sprites, 5, tex_sprites);
 	initSprites();
 	initVDP2();
 	slTVOn();

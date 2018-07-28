@@ -4,9 +4,6 @@ SpriteNode createSpriteNode();
 SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
 void deleteSpriteNode(SpriteNode* head, SpriteNode node);
 
-SPRITE_INFO defaultSprite;
-SpriteNode headNode = NULL;
-
 SpriteNode createSpriteNode(void)
 {
 	SpriteNode tmp = (SpriteNode)malloc(sizeof(struct SpriteList));
@@ -20,8 +17,10 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 	SpriteNode tmp, ptr;
 	tmp = createSpriteNode();
 	tmp->sprite = data;
-	if (head == NULL)
+	if (head == NULL) {
 		head = tmp;
+		return head;
+	}
 	else {
 		ptr = head;
 		while (ptr->next != NULL)
