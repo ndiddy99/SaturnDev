@@ -1,0 +1,1 @@
+updatesprites- freeze on player death, infinite loop

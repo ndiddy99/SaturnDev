@@ -1,8 +1,5 @@
-#define fixedToUint16(fixed) (fixed >> 16)
-
-SpriteNode createSpriteNode();
-SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
-void deleteSpriteNode(SpriteNode* head, SpriteNode node);
+#include "sgl.h"
+#include "spritelist.h"
 
 SpriteNode createSpriteNode(void)
 {
@@ -32,6 +29,7 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 
 void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 {
+	int count;
 	slPrint("deleteSpriteNode", slLocate(0,0));
 	if (node->next != NULL) {
 		slPrint("norm", slLocate(0,1));
@@ -48,6 +46,8 @@ void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 		slPrint("last", slLocate(0,1));
 		SpriteNode tmp = *head;
 		while (tmp->next != node) {
+			count++;
+			slPrintHex(count, slLocate(0,2));
 			tmp = tmp->next;
 			if (tmp == NULL)
 				return;

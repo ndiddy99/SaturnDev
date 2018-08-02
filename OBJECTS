@@ -1,5 +1,5 @@
 # source_program
-SRCS = main.c assets.c scrollfunctions.c
+SRCS = main.c assets.c game.c scrollfunctions.c spritelist.c
 
 SYSOBJS = $(CMNDIR)/cinit.o $(SGLLDR)/sglarea.o
 OBJS = $(SRCS:.c=.o)
