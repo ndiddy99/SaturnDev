@@ -48,6 +48,9 @@ SPRITE_INFO defaultSprite;
 SpriteNode headNode = NULL;
 SpriteNode eye1;
 SpriteNode eye2;
+#define NUM_PLAYER_SPRITES 4 //the number of sprites used for player face animation
+Uint8 numSprites; //the number of sprites the engine's keeping track of
+Uint8 dispFace; //1 if we're displaying the "player face" sprites, 0 otherwise
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
@@ -174,7 +177,6 @@ static void initVDP2(void)
 	sl1MapRA((void *)RBG0_MAP_ADR);
 	slOverRA(2);
 	Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
-	Map2VRAM(map_map1, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);
 	Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
 	
 	slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
@@ -238,6 +240,7 @@ static void updateBG(void)
 				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
 					playerState = PLAYER_STATE_DEAD;
 					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON); //turn off player's bg layer
+					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = PLAYER_ATTR;
 					tmp.type = TYPE_NULL;
@@ -271,6 +274,7 @@ static void updateBG(void)
 			screenY = toFIXED(0.0);
 			playerState = PLAYER_STATE_FALLING;
 			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+			dispFace = 1;
 			deleteSpriteNode(&headNode, playerNode);
 		}
 	break;
@@ -469,7 +473,7 @@ static void dispSprites(void)
 	FIXED spritePos[XYZS];
 	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
-		while (playerState == PLAYER_STATE_DEAD && ptr->sprite.type == TYPE_FACE) {
+		while (!dispFace && ptr->sprite.type == TYPE_FACE) {
 			if (ptr->next != NULL)
 				ptr = ptr->next;
 			else
@@ -495,29 +499,65 @@ static void dispSprites(void)
 			spritePos[S] = spriteScale;
 		//slPrintFX(spriteScale, slLocate(0,6));
 		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(ptr->sprite.ang));
-		ptr = ptr->next;
+		if (ptr->next != NULL)
+			ptr = ptr->next;
+		else
+			break;
 	}
 }
- 
+
+void loadLevel(Uint16 map[])
+{
+	Map2VRAM(map, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);	
+}
+#define GAME_STATE_NORMAL 0 
+#define GAME_STATE_COMPLETE 1
 void runLevel(void)
 {
+	int gameState = GAME_STATE_NORMAL;
 	int i;
-	
-	slInitSystem(TV_320x224,tex_sprites,1);
+	SpriteNode player; //player sprite for animate up
+	numSprites = 0;
+	dispFace = 1;
 	slTVOff();
 	set_sprite(pic_sprites, 5, tex_sprites);
 	initSprites();
 	initVDP2();
 	slTVOn();
-	for (i = 0; i < 2; i++) {
-		addSpriteNode(headNode, defaultSprite);
+	while (1) {
+		switch (gameState) {
+			case GAME_STATE_NORMAL:
+				handleInput();
+				updateBG();
+				updateSprites();
+				dispSprites();
+				slSynch();
+				if (numSprites <= NUM_PLAYER_SPRITES) {
+					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON);
+					dispFace = 0;
+					SPRITE_INFO tmp = defaultSprite;
+					tmp.attr = PLAYER_ATTR;
+					tmp.type = TYPE_NULL;
+					tmp.pos[X] = screenX;
+					tmp.pos[Y] = screenY;
+					tmp.pos[S] = toFIXED(1.0);
+					player = addSpriteNode(headNode, tmp);
+					gameState = GAME_STATE_COMPLETE;
+				}
+			break;
+			case GAME_STATE_COMPLETE:
+				dispSprites();
+				slSynch();
+				if (player->sprite.pos[S] < toFIXED(6.0)) {
+					player->sprite.pos[S] += toFIXED(0.1);
+					player->sprite.ang += 10;
+				}
+				else {
+					clearSpriteList(&headNode);
+					return;
+				}
+			break;
+		}
 	}
-	while(1) {
-		handleInput();
-		updateBG();
-		updateSprites();
-		dispSprites();
-		slSynch();
-	} 
 }
 

@@ -9,6 +9,8 @@
 #include "assets\map1.map"
 #include "assets\map1.pal"
 
+#include "assets\map2.map"
+
 #include "assets\road.cel"
 #include "assets\road.map"
 #include "assets\road.pal"

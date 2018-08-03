@@ -22,5 +22,6 @@ typedef struct SpriteList* SpriteNode;
 SpriteNode createSpriteNode();
 SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data);
 void deleteSpriteNode(SpriteNode* head, SpriteNode node);
+void clearSpriteList(SpriteNode* head);
 
 #endif

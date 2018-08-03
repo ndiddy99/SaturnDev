@@ -1,4 +1,5 @@
 #include "sgl.h"
+#include "game.h"
 #include "spritelist.h"
 
 SpriteNode createSpriteNode(void)
@@ -10,6 +11,7 @@ SpriteNode createSpriteNode(void)
 
 SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 {
+	numSprites++;
 	slPrint("addSpriteNode", slLocate(0,0));
 	SpriteNode tmp, ptr;
 	tmp = createSpriteNode();
@@ -29,6 +31,7 @@ SpriteNode addSpriteNode(SpriteNode head, SPRITE_INFO data)
 
 void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 {
+	numSprites--;
 	int count;
 	slPrint("deleteSpriteNode", slLocate(0,0));
 	if (node->next != NULL) {
@@ -40,6 +43,7 @@ void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 	}
 	else if (*head==node) { //if only one node
 		slPrint("only", slLocate(0,1));
+		free(node);
 		*head = NULL;
 	}
 	else {
@@ -55,4 +59,16 @@ void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 		free(tmp->next);
 		tmp->next = NULL;
 	}
+}
+
+void clearSpriteList(SpriteNode* head) //clears all sprites in the SpriteList
+{
+	SpriteNode next, current;
+	current = *head;
+	while (current != NULL) {
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	*head = NULL;
 }
