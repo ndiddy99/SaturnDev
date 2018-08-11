@@ -40,7 +40,12 @@ Add level begin/end animations
 #define PLAYER_STATE_RISING 1
 #define PLAYER_STATE_DEAD 2
 int playerState = PLAYER_STATE_FALLING;
-
+#define GAME_STATE_START 0
+#define GAME_STATE_FADEIN 1
+#define GAME_STATE_NORMAL 2 
+#define GAME_STATE_FADEOUT 3
+#define GAME_STATE_COMPLETE 4
+int gameState; //for main game state machine
 FIXED scale = toFIXED(1.0);
 FIXED scaleSpeed = toFIXED(0.0);
 
@@ -193,7 +198,8 @@ static void initVDP2(void)
 	slScrPosNbg1(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
 	slPriorityNbg1(7);
 	slColorCalc(CC_RATE | CC_TOP | NBG1ON);
-	slColRateNbg1(0x08); 
+	//slColRateNbg1(0x08); 
+	slColRateNbg1(0x00);
 	
 	//init clouds
 	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -218,7 +224,7 @@ static void initVDP2(void)
 	slScrPosNbg3(toFIXED(0), toFIXED(0));
 	
 	slColorCalcOn(NBG1ON | NBG2ON);
-	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);	
+	slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON);
 }
 
 static void updateBG(void)
@@ -227,57 +233,59 @@ static void updateBG(void)
 	static FIXED playerFallSpeed;
 	
 	slPrint("updateBG", slLocate(0,0));
-	switch (playerState) {
-	case PLAYER_STATE_FALLING:
-		scaleSpeed -= toFIXED(0.001);
-		scale += scaleSpeed;
-		if (scale <= toFIXED(0.2)) {
-			playerState = PLAYER_STATE_RISING;
-			scaleSpeed = toFIXED(0.05);
-		//	slPrintFX((screenX >> 4), slLocate(0,1));
-			//slPrintFX((screenY >> 4), slLocate(0,2));
-			if (!handleSpriteCollision(screenX, screenY)) {
-				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
-					playerState = PLAYER_STATE_DEAD;
-					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON); //turn off player's bg layer
-					dispFace = 0;
-					SPRITE_INFO tmp = defaultSprite;
-					tmp.attr = PLAYER_ATTR;
-					tmp.type = TYPE_NULL;
-					tmp.pos[X] = screenX;
-					tmp.pos[Y] = screenY;
-					tmp.pos[S] = toFIXED(1.0);
-					playerNode = addSpriteNode(headNode, tmp);
-					playerFallSpeed = toFIXED(0.0);
+	if (gameState == GAME_STATE_NORMAL) {
+		switch (playerState) {
+		case PLAYER_STATE_FALLING:
+			scaleSpeed -= toFIXED(0.001);
+			scale += scaleSpeed;
+			if (scale <= toFIXED(0.2)) {
+				playerState = PLAYER_STATE_RISING;
+				scaleSpeed = toFIXED(0.05);
+			//	slPrintFX((screenX >> 4), slLocate(0,1));
+				//slPrintFX((screenY >> 4), slLocate(0,2));
+				if (!handleSpriteCollision(screenX, screenY)) {
+					if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
+						playerState = PLAYER_STATE_DEAD;
+						slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON); //turn off player's bg layer
+						dispFace = 0;
+						SPRITE_INFO tmp = defaultSprite;
+						tmp.attr = PLAYER_ATTR;
+						tmp.type = TYPE_NULL;
+						tmp.pos[X] = screenX;
+						tmp.pos[Y] = screenY;
+						tmp.pos[S] = toFIXED(1.0);
+						playerNode = addSpriteNode(headNode, tmp);
+						playerFallSpeed = toFIXED(0.0);
+					}
 				}
 			}
+		break;
+		case PLAYER_STATE_RISING:
+			scaleSpeed -= toFIXED(0.001);
+			scale += scaleSpeed;
+			if (scaleSpeed <= 0) {
+				playerState = PLAYER_STATE_FALLING;
+				scaleSpeed = 0;
+			}
+		break;
+		case PLAYER_STATE_DEAD:
+			if (playerNode->sprite.pos[S] > toFIXED(0.0)) {
+				playerFallSpeed += toFIXED(0.005);
+				playerNode->sprite.pos[S] -= playerFallSpeed;
+				playerNode->sprite.ang += 5;
+			}
+			else { //reset player pos
+				scale = toFIXED(1.0);
+				scaleSpeed = toFIXED(0.0);
+				screenX = toFIXED(0.0);
+				screenY = toFIXED(0.0);
+				playerState = PLAYER_STATE_FALLING;
+				slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+				dispFace = 1;
+				deleteSpriteNode(&headNode, playerNode);
+			}
+		break;
 		}
-	break;
-	case PLAYER_STATE_RISING:
-		scaleSpeed -= toFIXED(0.001);
-		scale += scaleSpeed;
-		if (scaleSpeed <= 0) {
-			playerState = PLAYER_STATE_FALLING;
-			scaleSpeed = 0;
-		}
-	break;
-	case PLAYER_STATE_DEAD:
-		if (playerNode->sprite.pos[S] > toFIXED(0.0)) {
-			playerFallSpeed += toFIXED(0.005);
-			playerNode->sprite.pos[S] -= playerFallSpeed;
-			playerNode->sprite.ang += 5;
-		}
-		else { //reset player pos
-			scale = toFIXED(1.0);
-			scaleSpeed = toFIXED(0.0);
-			screenX = toFIXED(0.0);
-			screenY = toFIXED(0.0);
-			playerState = PLAYER_STATE_FALLING;
-			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
-			dispFace = 1;
-			deleteSpriteNode(&headNode, playerNode);
-		}
-	break;
 	}
 	slLookR(screenX, screenY);
 	slZoomR(scale, scale);
@@ -510,22 +518,60 @@ void loadLevel(Uint16 map[])
 {
 	Map2VRAM(map, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);	
 }
-#define GAME_STATE_NORMAL 0 
-#define GAME_STATE_COMPLETE 1
+
 void runLevel(void)
 {
-	int gameState = GAME_STATE_NORMAL;
+	gameState = GAME_STATE_START;
 	int i;
+	#define NORMAL_COL_RATIO 0x0f
+	Uint8 colorRatio = 0x00;
 	SpriteNode player; //player sprite for animate up
 	numSprites = 0;
-	dispFace = 1;
+	dispFace = 0;
+	screenX = 0;
+	screenY = 0;
 	slTVOff();
 	set_sprite(pic_sprites, 5, tex_sprites);
 	initSprites();
 	initVDP2();
 	slTVOn();
+	
+	SPRITE_INFO tmp = defaultSprite;
+	tmp.attr = PLAYER_ATTR;
+	tmp.type = TYPE_NULL;
+	tmp.pos[X] = screenX;
+	tmp.pos[Y] = screenY;
+	tmp.pos[S] = toFIXED(6.0);
+	player = addSpriteNode(headNode, tmp);
+	
 	while (1) {
 		switch (gameState) {
+			case GAME_STATE_START:
+				updateBG();
+				dispSprites();
+				slSynch();
+				if (player->sprite.pos[S] > toFIXED(1.0)) {
+					player->sprite.pos[S] -= toFIXED(0.1);
+				}
+				else {
+					deleteSpriteNode(&headNode, player);
+					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+					dispFace = 1;
+					gameState = GAME_STATE_FADEIN;
+				}
+			break;
+			case GAME_STATE_FADEIN:
+				if (colorRatio < NORMAL_COL_RATIO) {
+					colorRatio++;
+					slColRateNbg1(colorRatio);
+					updateBG();
+					updateSprites();
+					dispSprites();
+					slSynch();
+				}
+				else
+					gameState = GAME_STATE_NORMAL;
+			break;
 			case GAME_STATE_NORMAL:
 				handleInput();
 				updateBG();
@@ -533,6 +579,18 @@ void runLevel(void)
 				dispSprites();
 				slSynch();
 				if (numSprites <= NUM_PLAYER_SPRITES) {
+					gameState = GAME_STATE_FADEOUT;
+				}
+			break;
+			case GAME_STATE_FADEOUT:
+				if (colorRatio > 0) {
+					colorRatio--;
+					slColRateNbg1(colorRatio);
+					updateBG();
+					dispSprites();
+					slSynch();
+				}
+				else {
 					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON);
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
@@ -547,6 +605,7 @@ void runLevel(void)
 			break;
 			case GAME_STATE_COMPLETE:
 				dispSprites();
+				updateBG();
 				slSynch();
 				if (player->sprite.pos[S] < toFIXED(6.0)) {
 					player->sprite.pos[S] += toFIXED(0.1);
