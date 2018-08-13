@@ -41,13 +41,14 @@ void deleteSpriteNode(SpriteNode* head, SpriteNode node)
 		node->next = tmp->next;
 		free(tmp);
 	}
-	else if (*head==node) { //if only one node
+	else 
+	if (*head==node) { //if only one node
 		slPrint("only", slLocate(0,1));
 		free(node);
 		*head = NULL;
 	}
 	else {
-		slPrint("last", slLocate(0,1));
+		// slPrint("last", slLocate(0,1));
 		SpriteNode tmp = *head;
 		while (tmp->next != node) {
 			count++;
