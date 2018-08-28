@@ -1,5 +1,6 @@
-#ifndef GAME
-#define GAME
+#ifndef GAME_H
+#define GAME_H
+
 extern Uint8 numSprites; //current number of onscreen sprites
 void loadLevel(Uint16 map[]);
 void loadSpritePos(FIXED posArr[], int size);

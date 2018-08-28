@@ -47,8 +47,10 @@ int playerState = PLAYER_STATE_FALLING;
 #define GAME_STATE_COMPLETE 4
 #define GAME_STATE_CURSOR 5
 int gameState; //for main game state machine
-FIXED scale = toFIXED(1.0);
+FIXED scale = toFIXED(0.25);
 FIXED scaleSpeed = toFIXED(0.0);
+
+Uint16 playfield[1024]; //32 * 32
 
 SPRITE_INFO defaultSprite;
 SpriteNode headNode = NULL;
@@ -84,6 +86,7 @@ static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED s
 static void updateSprites(void);
 static Uint8 checkShotCollision(SpriteNode node);
 static void dispSprites(void);
+static void drawPlayField(void);
 
 static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 {
@@ -102,9 +105,10 @@ static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 #define EYE_MIN_YPOS toFIXED(0)
 #define EYE_MOVE_SPEED toFIXED(0.5)
 #define EYE_DISTANCE toFIXED(23)
+#define BASE_MOVE_SPEED toFIXED(2.0)
 static void handleInput(void)
 {
-	static int moveSpeed = toFIXED(2.0); //speed the player moves at
+	int moveSpeed = BASE_MOVE_SPEED; //slMulFX(scale, BASE_MOVE_SPEED); //speed the player moves at
 	
 	Uint16 data = ~Smpc_Peripheral[0].data;
 	if (playerState != PLAYER_STATE_DEAD) {
@@ -197,18 +201,18 @@ static void initVDP2(void)
 	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
 	
-	//init rotating bg 
-	slRparaInitSet((void *)RBG0_PAR_ADR);
-	slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
-	slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_10BIT);
-	slPlaneRA(PL_SIZE_1x1);
-	sl1MapRA((void *)RBG0_MAP_ADR);
-	slOverRA(2);
-	Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
-	Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
+	// //init rotating bg 
+	// slRparaInitSet((void *)RBG0_PAR_ADR);
+	// slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
+	// slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_10BIT);
+	// slPlaneRA(PL_SIZE_1x1);
+	// sl1MapRA((void *)RBG0_MAP_ADR);
+	// slOverRA(2);
+	// Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
+	// Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
 	
-	slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
-	slLookR(toFIXED(0.0) , toFIXED(0.0));
+	// slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
+	// slLookR(toFIXED(0.0) , toFIXED(0.0));
 	
 	//init face
 	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -247,7 +251,9 @@ static void initVDP2(void)
 	slScrPosNbg3(toFIXED(0), toFIXED(0));
 	
 	slColorCalcOn(NBG1ON | NBG2ON);
-	slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON);
+	slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON);
+	
+	// slScrAutoDisp(RBG0ON);
 }
 
 static void updateBG(void)
@@ -256,8 +262,6 @@ static void updateBG(void)
 	if (gameState == GAME_STATE_NORMAL) {
 		handlePlayerMovement();
 	}
-	slLookR(screenX, screenY);
-	slZoomR(scale, scale);
 	//cloud movement
 	bg2X += toFIXED(1.0);
 	bg2Y += toFIXED(1.0);
@@ -268,21 +272,24 @@ static void updateBG(void)
 
 static void handlePlayerMovement(void)
 {
+	#define GRAVITY toFIXED(0.007)
 	static SpriteNode playerNode;
 	static FIXED playerFallSpeed;
 	switch (playerState) {
 	case PLAYER_STATE_FALLING:
-		scaleSpeed -= toFIXED(0.001);
+		slPrintFX(scaleSpeed, slLocate(0,2));
+		slPrintFX(scale, slLocate(0,3));
+		scaleSpeed += GRAVITY;
 		scale += scaleSpeed;
-		if (scale <= toFIXED(0.2)) {
+		if (scale >= toFIXED(5)) { //when we "hit the ground"
 			playerState = PLAYER_STATE_RISING;
-			scaleSpeed = toFIXED(0.05);
+			scaleSpeed = toFIXED(-0.25); //we're setting the speed here to avoid rounding errors causing bouncing less height each time
 		//	slPrintFX((screenX >> 4), slLocate(0,1));
 			//slPrintFX((screenY >> 4), slLocate(0,2));
 			if (!handleSpriteCollision(screenX, screenY)) {
 				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
 					playerState = PLAYER_STATE_DEAD;
-					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON); //turn off player's bg layer
+					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON); //turn off player's bg layer
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = PLAYER_ATTR;
@@ -297,9 +304,11 @@ static void handlePlayerMovement(void)
 		}
 	break;
 	case PLAYER_STATE_RISING:
-		scaleSpeed -= toFIXED(0.001);
+		slPrintFX(scaleSpeed, slLocate(0,2));
+		slPrintFX(scale, slLocate(0,3));
+		scaleSpeed += GRAVITY;
 		scale += scaleSpeed;
-		if (scaleSpeed <= 0) {
+		if (scaleSpeed >= 0) {
 			playerState = PLAYER_STATE_FALLING;
 			scaleSpeed = 0;
 		}
@@ -316,7 +325,7 @@ static void handlePlayerMovement(void)
 			screenX = toFIXED(0.0);
 			screenY = toFIXED(0.0);
 			playerState = PLAYER_STATE_FALLING;
-			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 			dispFace = 1;
 			deleteSpriteNode(&headNode, playerNode);
 		}
@@ -361,7 +370,7 @@ static Uint8 handleGroundCollision(FIXED x, FIXED y) {
 	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
 	FIXED xDecimal = x & 0x0000ffff;
 	FIXED yDecimal = y & 0x0000ffff;
-	if (MapRead(RBG0_MAP_ADR, fixedToUint16(x), fixedToUint16(y)) == 0x0000) //if no ground
+	if (MapRead(playfield, fixedToUint16(x), fixedToUint16(y)) == 0x0000) //if no ground
 		return 0;
 	if (xDecimal > BLOCK_THRESHOLD_HIGH || xDecimal < BLOCK_THRESHOLD_LOW) { //either less than .2 or greater than .8: trigger block to left and block
 		writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
@@ -382,8 +391,8 @@ static Uint8 handleGroundCollision(FIXED x, FIXED y) {
 
 //when I have more block types, this should scan them to make sure they're breakable before breaking them
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
-	if (MapRead(RBG0_MAP_ADR, x, y) == 0x0004)
-		MapWrite(RBG0_MAP_ADR, x, y, 1, data);
+	if (MapRead(playfield, x, y) == 0x0004)
+		MapWrite(playfield, x, y, data);
 }
 
 static void updateSprites(void)
@@ -400,7 +409,7 @@ static void updateSprites(void)
 			break;
 		case TYPE_CIRCLE:
 			if (ptr->sprite.state != STATE_DEAD) {
-				if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
+				if (MapRead(playfield, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
 					ptr->sprite.state = STATE_DEAD;
 					break;
 				}
@@ -413,7 +422,7 @@ static void updateSprites(void)
 				ptr->sprite.pos[X] += ptr->sprite.dx;
 				ptr->sprite.pos[Y] += ptr->sprite.dy;
 				
-				if (MapRead(RBG0_MAP_ADR, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
+				if (MapRead(playfield, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
 					ptr->sprite.pos[X] -= ptr->sprite.dx;
 					ptr->sprite.pos[Y] -= ptr->sprite.dy;
 					ptr->sprite.ang += 90;
@@ -504,7 +513,6 @@ static void dispSprites(void)
 {
 	slPrint("dispSprites", slLocate(0,0));
 	int i;
-	FIXED spriteScale = slDivFX(scale, toFIXED(1.0)); //reciprocal
 	FIXED spritePos[XYZS];
 	SpriteNode ptr = headNode;
 	while (ptr != NULL) {
@@ -520,22 +528,45 @@ static void dispSprites(void)
 			spritePos[Z] = ptr->sprite.pos[Z];
 		}
 		else {
-			spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, spriteScale);
-			spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, spriteScale);
+			spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, scale);
+			spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, scale);
 			spritePos[Z] = toFIXED(169);
 		}
 		if (ptr->sprite.state == STATE_DEAD)
-			spritePos[S] = slMulFX(ptr->sprite.pos[S], spriteScale);
+			spritePos[S] = slMulFX(ptr->sprite.pos[S], scale);
 		else if (ptr->sprite.type == TYPE_NULL || ptr->sprite.type == TYPE_FACE)
 			spritePos[S] = ptr->sprite.pos[S];
 		else
-			spritePos[S] = spriteScale;
+			spritePos[S] = scale;
 		//slPrintFX(spriteScale, slLocate(0,6));
 		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(ptr->sprite.ang));
 		if (ptr->next != NULL)
 			ptr = ptr->next;
 		else
 			break;
+	}
+}
+
+static void drawPlayField(void)
+{
+	#define PLAYFIELD_START_INDEX 5
+	int i = 0;
+	int x, y;
+	Uint16 currVal;
+	FIXED spritePos[XYZS];
+	SPR_ATTR playfieldSprite = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
+	for (y = 0; y < 32; y++) {
+		for (x = 0; x < 32; x++) {
+			currVal = playfield[i++] >> 1; //works with 2x2 SGL maps, this counteracts the 2x2
+			if (currVal) { //keep from having a bunch of blank sprites
+				spritePos[X] = slMulFX((x << 20) - (screenX - toFIXED(8)), scale); // << 20 = (x * 16) << 16
+				spritePos[Y] = slMulFX((y << 20) - (screenY - toFIXED(8)), scale);
+				spritePos[Z] = toFIXED(170);
+				spritePos[S] = scale;
+				playfieldSprite.texno = currVal + PLAYFIELD_START_INDEX;
+				slDispSprite(spritePos, &playfieldSprite, DEGtoANG(0));
+			}
+		}
 	}
 }
 
@@ -547,14 +578,17 @@ static void initGame(void)
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
 	slTVOff();
-	set_sprite(pic_sprites, 5, tex_sprites);
+	set_sprite(pic_sprites, 8, tex_sprites);
 	initVDP2();
 	slTVOn();
 }
 
 void loadLevel(Uint16 map[])
 {
-	Map2VRAM(map, (void *)RBG0_MAP_ADR, 64, 64, 1, 0);	
+	int i;
+	for (i = 0; i < 1024; i++) {
+		playfield[i] = map[i];
+	}
 }
 
 void loadSpritePos(FIXED posArr[], int size)
@@ -581,7 +615,6 @@ void runLevel(void)
 	Uint8 colorRatio = 0x00;
 	int i;
 	initGame();
-	//initSprites();
 	dispFace = 0;
 	SPRITE_INFO tmp = defaultSprite;
 	tmp.attr = PLAYER_ATTR;
@@ -591,18 +624,29 @@ void runLevel(void)
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSpriteNode(headNode, tmp);
 	
+	//TEMP below here: remove at some point
+	// slColRateNbg1(colorRatio);
+	// initSprites();
 	while (1) {
+		// handleInput();
+		// updateBG();
+		// updateSprites();
+		// dispSprites();
+		// drawPlayField();
+		// slSynch();
+		
 		switch (gameState) {
 			case GAME_STATE_START:
 				updateBG();
 				dispSprites();
+				drawPlayField();
 				slSynch();
 				if (player->sprite.pos[S] > toFIXED(1.0)) {
 					player->sprite.pos[S] -= toFIXED(0.1);
 				}
 				else {
 					deleteSpriteNode(&headNode, player);
-					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON | RBG0ON);
+					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 					dispFace = 1;
 					gameState = GAME_STATE_FADEIN;
 				}
@@ -614,6 +658,7 @@ void runLevel(void)
 					updateBG();
 					updateSprites();
 					dispSprites();
+					drawPlayField();
 					slSynch();
 				}
 				else
@@ -624,6 +669,7 @@ void runLevel(void)
 				updateBG();
 				updateSprites();
 				dispSprites();
+				drawPlayField();
 				slPrintHex(numSprites, slLocate(0,7));
 				slSynch();
 				if (numSprites <= NUM_PLAYER_SPRITES) {
@@ -636,10 +682,11 @@ void runLevel(void)
 					slColRateNbg1(colorRatio);
 					updateBG();
 					dispSprites();
+					drawPlayField();
 					slSynch();
 				}
 				else {
-					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON | RBG0ON);
+					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON);
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = PLAYER_ATTR;
@@ -654,6 +701,7 @@ void runLevel(void)
 			case GAME_STATE_COMPLETE:
 				dispSprites();
 				updateBG();
+				drawPlayField();
 				slSynch();
 				if (player->sprite.pos[S] < toFIXED(6.0)) {
 					player->sprite.pos[S] += toFIXED(0.1);

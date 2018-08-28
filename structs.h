@@ -1,3 +1,6 @@
+#ifndef STRUCTS_H
+#define STRUCTS_H
+
 typedef struct SpriteInfo {
 	FIXED pos[XYZS];
 	Uint16 ang;
@@ -28,3 +31,4 @@ struct SpriteList {
 
 typedef struct SpriteList* SpriteNode;
 
+#endif

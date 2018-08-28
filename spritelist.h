@@ -1,5 +1,5 @@
-#ifndef SPRITELIST
-#define SPRITELISt
+#ifndef SPRITELIST_H
+#define SPRITELIST_H
 
 typedef struct SpriteInfo {
 	FIXED pos[XYZS];
