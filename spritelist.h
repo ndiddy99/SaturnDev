@@ -21,6 +21,7 @@ typedef struct SpriteInfo {
 
 #define fixedToUint16(fixed) (fixed >> 16)
 int addSprite(SPRITE_INFO data);
+void deleteSprite(int index);
 void clearSpriteList(void);
 
 #endif

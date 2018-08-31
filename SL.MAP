@@ -185,18 +185,19 @@ SLSTART         0x06004000       0x30
                 0x06004040                main
  .text          0x06004090       0x70 main.o
                 0x06004090                ss_main
- .text          0x06004100     0x15c0 game.o
-                0x06004ed0                loadSpritePos
-                0x06004ea0                loadLevel
-                0x060050c0                runLevel
- .text          0x060056c0       0xf0 scrollfunctions.o
-                0x06005760                MapRead
-                0x06005780                Pal2CRAM
-                0x060056e0                Map2VRAM
-                0x06005740                MapWrite
-                0x060056c0                Cel2VRAM
- .text          0x060057b0       0xa0 spritelist.o
-                0x060057b0                addSprite
+ .text          0x06004100     0x1590 game.o
+                0x06004e90                loadSpritePos
+                0x06004e60                loadLevel
+                0x06005080                runLevel
+ .text          0x06005690       0xf0 scrollfunctions.o
+                0x06005730                MapRead
+                0x06005750                Pal2CRAM
+                0x060056b0                Map2VRAM
+                0x06005710                MapWrite
+                0x06005690                Cel2VRAM
+ .text          0x06005780       0xd0 spritelist.o
+                0x06005800                deleteSprite
+                0x06005780                addSprite
                 0x06005830                clearSpriteList
  .text          0x06005850      0x128 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
                 0x06005850                slInitSystem

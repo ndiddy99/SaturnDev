@@ -9,10 +9,17 @@ int addSprite(SPRITE_INFO data)
 		if (sprites[i].state == SPRITE_STATE_NODISP) {
 			// sprites[i] = data;
 			memcpy(&sprites[i], &data, sizeof(SPRITE_INFO));
+			numSprites++;
 			return i;
 		}
 	}
 	return -1;
+}
+
+void deleteSprite(int index)
+{
+	sprites[index].state = SPRITE_STATE_NODISP;
+	numSprites--;
 }
 
 void clearSpriteList(void) //clears all sprites in the SpriteList

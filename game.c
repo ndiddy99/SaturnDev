@@ -315,7 +315,7 @@ static void handlePlayerMovement(void)
 			playerState = PLAYER_STATE_FALLING;
 			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 			dispFace = 1;
-			sprites[playerNode].state = SPRITE_STATE_NODISP;
+			deleteSprite(playerNode);
 		}
 	break;
 	}	
@@ -339,7 +339,7 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 							tmp.pos[Y] = y;
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
 							addSprite(tmp);
-							sprites[i].state = SPRITE_STATE_NODISP;
+							deleteSprite(i);
 							return 1;
 						}
 					}
@@ -415,7 +415,7 @@ static void updateSprites(void)
 					if (sprites[i].pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
 						sprites[i].pos[S] -= toFIXED(0.02);
 					else {
-						sprites[i].state = SPRITE_STATE_NODISP;
+						deleteSprite(i);
 					}
 				}
 				break;
@@ -423,10 +423,10 @@ static void updateSprites(void)
 				sprites[i].pos[X] += sprites[i].dx;
 				sprites[i].pos[Y] += sprites[i].dy;
 				if (checkShotCollision(i))
-					sprites[i].state = SPRITE_STATE_NODISP;
+					deleteSprite(i);
 				else if (abs(sprites[i].pos[X] - screenX) > SCREEN_BOUND_R || //remove shot sprite if it goes offscreen
 					abs(sprites[i].pos[Y] - screenY) > SCREEN_BOUND_B) {
-						sprites[i].state = SPRITE_STATE_NODISP;
+						deleteSprite(i);
 					}
 				break;
 			}
@@ -468,7 +468,7 @@ static Uint8 checkShotCollision(int index)
 							tmp.pos[X] = sprites[i].pos[X];
 							tmp.pos[Y] = sprites[i].pos[Y];
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
-							sprites[i].state = SPRITE_STATE_NODISP;
+							deleteSprite(i);
 							addSprite(tmp);
 							return 1;
 						}
@@ -604,7 +604,7 @@ void runLevel(void)
 					sprites[player].pos[S] -= toFIXED(0.1);
 				}
 				else {
-					sprites[player].state = SPRITE_STATE_NODISP;
+					deleteSprite(player);
 					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 					dispFace = 1;
 					gameState = GAME_STATE_FADEIN;
@@ -631,9 +631,9 @@ void runLevel(void)
 				drawPlayField();
 				slPrintHex(numSprites, slLocate(0,7));
 				slSynch();
-				// if (numSprites <= NUM_PLAYER_SPRITES) {
-					// gameState = GAME_STATE_FADEOUT;
-				// }
+				if (numSprites <= NUM_PLAYER_SPRITES) {
+					gameState = GAME_STATE_FADEOUT;
+				}
 			break;
 			case GAME_STATE_FADEOUT:
 				if (colorRatio > 0) {
