@@ -487,14 +487,14 @@ static void dispSprites(void)
 	int i;
 	FIXED spritePos[XYZS];
 	for (i = 0; i < MAX_SPRITES; i++) {
-		if (sprites[i].state != SPRITE_STATE_NODISP) {
+		if (sprites[i].state != SPRITE_STATE_NODISP && (dispFace || sprites[i].type != TYPE_FACE)) {
 			slPrintHex(i, slLocate(0,6));
-			while (!dispFace && sprites[i].type == TYPE_FACE) {
-				if (i >= MAX_SPRITES)
-					break;
-				else
-					i++;
-			}
+			// while (!dispFace && sprites[i].type == TYPE_FACE) {
+				// if (i >= MAX_SPRITES)
+					// break;
+				// else
+					// i++;
+			// }
 			if (sprites[i].type == TYPE_FACE) {
 				spritePos[X] = sprites[i].pos[X];
 				spritePos[Y] = sprites[i].pos[Y];
@@ -586,9 +586,9 @@ void runLevel(void)
 	initGame();
 	dispFace = 0;
 	SPRITE_INFO tmp = defaultSprite;
-	tmp.attr = &CIRCLE_ATTR;
-	tmp.type = TYPE_CIRCLE;
-	tmp.state = SPRITE_STATE_NORM;
+	tmp.attr = &PLAYER_ATTR;
+	tmp.type = TYPE_NULL;
+	// tmp.state = SPRITE_STATE_NORM;
 	tmp.pos[X] = toFIXED(0);
 	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
