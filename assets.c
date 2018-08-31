@@ -5,10 +5,7 @@
 #include "assets\face.map"
 #include "assets\face.pal"
 
-#include "assets\map1.cel"
 #include "assets\map1.map"
-#include "assets\map1.pal"
-
 #include "assets\map2.map"
 
 #include "assets\road.cel"

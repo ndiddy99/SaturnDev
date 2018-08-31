@@ -52,10 +52,11 @@ FIXED scaleSpeed = toFIXED(0.0);
 
 Uint16 playfield[1024]; //32 * 32
 
+SPRITE_INFO sprites[MAX_SPRITES];
+
 SPRITE_INFO defaultSprite;
-SpriteNode headNode = NULL;
-SpriteNode eye1;
-SpriteNode eye2;
+int eye1Index;
+int eye2Index;
 #define NUM_PLAYER_SPRITES 4 //the number of sprites used for player face animation
 Uint8 numSprites; //the number of sprites the engine's keeping track of
 Uint8 dispFace; //1 if we're displaying the "player face" sprites, 0 otherwise
@@ -84,7 +85,7 @@ static Uint8 handleGroundCollision(FIXED x, FIXED y);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy);
 static void updateSprites(void);
-static Uint8 checkShotCollision(SpriteNode node);
+static Uint8 checkShotCollision(int index);
 static void dispSprites(void);
 static void drawPlayField(void);
 
@@ -114,26 +115,26 @@ static void handleInput(void)
 	if (playerState != PLAYER_STATE_DEAD) {
 		if (data & PER_DGT_KR) {
 			screenX += moveSpeed;
-			if (eye1->sprite.pos[X] < EYE_MAX_XPOS)
-				eye1->sprite.pos[X] += EYE_MOVE_SPEED;
+			if (sprites[eye1Index].pos[X] < EYE_MAX_XPOS)
+				sprites[eye1Index].pos[X] += EYE_MOVE_SPEED;
 		}
 		else if (data & PER_DGT_KL) {
 			screenX -= moveSpeed;
-			if (eye1->sprite.pos[X] > EYE_MIN_XPOS)
-				eye1->sprite.pos[X] -= EYE_MOVE_SPEED;
+			if (sprites[eye1Index].pos[X] > EYE_MIN_XPOS)
+				sprites[eye1Index].pos[X] -= EYE_MOVE_SPEED;
 		}
 		if (data & PER_DGT_KU) {
 			screenY -= moveSpeed;
-			if (eye1->sprite.pos[Y] > EYE_MAX_YPOS)
-				eye1->sprite.pos[Y] -= EYE_MOVE_SPEED;
+			if (sprites[eye1Index].pos[Y] > EYE_MAX_YPOS)
+				sprites[eye1Index].pos[Y] -= EYE_MOVE_SPEED;
 		}
 		else if (data & PER_DGT_KD) {
 			screenY += moveSpeed;
-			if (eye1->sprite.pos[Y] < EYE_MIN_YPOS)
-				eye1->sprite.pos[Y] += EYE_MOVE_SPEED;
+			if (sprites[eye1Index].pos[Y] < EYE_MIN_YPOS)
+				sprites[eye1Index].pos[Y] += EYE_MOVE_SPEED;
 		}
-		eye2->sprite.pos[X] = eye1->sprite.pos[X] + EYE_DISTANCE;
-		eye2->sprite.pos[Y] = eye1->sprite.pos[Y];
+		sprites[eye2Index].pos[X] = sprites[eye1Index].pos[X] + EYE_DISTANCE;
+		sprites[eye2Index].pos[Y] = sprites[eye1Index].pos[Y];
 	}
 	//debug cursor movement
 	if (data & PER_DGT_TA) {
@@ -166,32 +167,32 @@ static void initSprites(void)
 	defaultSprite.pos[Z] = toFIXED(169);
 	defaultSprite.pos[S] = toFIXED(1.0); 
 	defaultSprite.ang = 0;
-	defaultSprite.attr = CIRCLE_ATTR;
+	defaultSprite.attr = &CIRCLE_ATTR;
 	defaultSprite.type = TYPE_CIRCLE;
 	defaultSprite.dx = toFIXED(0.0);
 	defaultSprite.dy = toFIXED(0.0);
-	defaultSprite.state = STATE_NORM;
+	defaultSprite.state = SPRITE_STATE_NORM;
 	//add eye sprites
 	SPRITE_INFO info = defaultSprite;
-	info.attr = SCLERA_ATTR;
+	info.attr = &SCLERA_ATTR;
 	info.type = TYPE_FACE;
 	info.pos[X] = toFIXED(-12);
 	info.pos[Y] = toFIXED(-8);
 	info.pos[Z] = toFIXED(160);
-	headNode = addSpriteNode(NULL, info);
+	addSprite(info);
 	info.pos[X] = toFIXED(11);
-	addSpriteNode(headNode, info);
+	addSprite(info);
 	info.pos[X] = 0;
 	info.pos[Y] = 0;
 	
-	info.attr = EYE_ATTR;
-	eye1 = addSpriteNode(headNode, info);
-	eye2 = addSpriteNode(headNode, info);
+	info.attr = &EYE_ATTR;
+	eye1Index = addSprite(info);
+	eye2Index = addSprite(info);
 	
-	eye1->sprite.pos[X] = toFIXED(-10);
-	eye1->sprite.pos[Y] = toFIXED(-7);
-	eye2->sprite.pos[X] = toFIXED(10);
-	eye2->sprite.pos[Y] = toFIXED(-7);
+	sprites[eye1Index].pos[X] = toFIXED(-10);
+	sprites[eye1Index].pos[Y] = toFIXED(-7);
+	sprites[eye2Index].pos[X] = toFIXED(10);
+	sprites[eye2Index].pos[Y] = toFIXED(-7);
 	
 }
 
@@ -200,19 +201,6 @@ static void initVDP2(void)
 {
 	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
-	
-	// //init rotating bg 
-	// slRparaInitSet((void *)RBG0_PAR_ADR);
-	// slCharRbg0(COL_TYPE_256, CHAR_SIZE_2x2);
-	// slPageRbg0((void *)RBG0_CEL_ADR, 0, PNB_1WORD|CN_10BIT);
-	// slPlaneRA(PL_SIZE_1x1);
-	// sl1MapRA((void *)RBG0_MAP_ADR);
-	// slOverRA(2);
-	// Cel2VRAM(cel_map1, (void *)RBG0_CEL_ADR, 3 * 64 * 4);
-	// Pal2CRAM(pal_map1, (void *)RBG0_COL_ADR, 256);
-	
-	// slDispCenterR(toFIXED(160.0) , toFIXED(112.0));
-	// slLookR(toFIXED(0.0) , toFIXED(0.0));
 	
 	//init face
 	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -273,7 +261,7 @@ static void updateBG(void)
 static void handlePlayerMovement(void)
 {
 	#define GRAVITY toFIXED(0.007)
-	static SpriteNode playerNode;
+	static int playerNode;
 	static FIXED playerFallSpeed;
 	switch (playerState) {
 	case PLAYER_STATE_FALLING:
@@ -292,12 +280,12 @@ static void handlePlayerMovement(void)
 					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON); //turn off player's bg layer
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
-					tmp.attr = PLAYER_ATTR;
+					tmp.attr = &PLAYER_ATTR;
 					tmp.type = TYPE_NULL;
 					tmp.pos[X] = screenX;
 					tmp.pos[Y] = screenY;
 					tmp.pos[S] = toFIXED(1.0);
-					playerNode = addSpriteNode(headNode, tmp);
+					playerNode = addSprite(tmp);
 					playerFallSpeed = toFIXED(0.0);
 				}
 			}
@@ -314,11 +302,11 @@ static void handlePlayerMovement(void)
 		}
 	break;
 	case PLAYER_STATE_DEAD:
-		if (playerNode->sprite.pos[S] > toFIXED(0.0)) {
+		if (sprites[playerNode].pos[S] > toFIXED(0.0)) {
 			playerFallSpeed += toFIXED(0.005);
-			playerNode->sprite.pos[S] -= playerFallSpeed;
-			playerNode->sprite.ang += 5;
-		}
+			sprites[playerNode].pos[S] -= playerFallSpeed;
+			sprites[playerNode].ang += 5;
+		}   
 		else { //reset player pos
 			scale = toFIXED(1.0);
 			scaleSpeed = toFIXED(0.0);
@@ -327,7 +315,7 @@ static void handlePlayerMovement(void)
 			playerState = PLAYER_STATE_FALLING;
 			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 			dispFace = 1;
-			deleteSpriteNode(&headNode, playerNode);
+			sprites[playerNode].state = SPRITE_STATE_NODISP;
 		}
 	break;
 	}	
@@ -337,29 +325,27 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 {
 	slPrint("handleSpriteCollision", slLocate(0,0));
 	//if ball x > sprite x1 and < sprite x2 
-	SpriteNode ptr = headNode;
-	int count = 0;
-	while (ptr != NULL) {
-		switch (ptr->sprite.type) {
-			case TYPE_CIRCLE:
-				if (ptr->sprite.pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && ptr->sprite.pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
-					if (ptr->sprite.pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && ptr->sprite.pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
-						SPRITE_INFO tmp = defaultSprite;
-						tmp.attr = SHOT_ATTR;
-						tmp.type = TYPE_SHOT;
-						tmp.pos[X] = x;
-						tmp.pos[Y] = y;
-						setShotVelocity(x, y, ptr->sprite.pos[X], ptr->sprite.pos[Y], &tmp.dx, &tmp.dy);
-						addSpriteNode(headNode, tmp);
-						deleteSpriteNode(&headNode, ptr);
-						return 1;
+	int i;
+	for (i = 0; i < MAX_SPRITES; i++) {
+		if (sprites[i].state != SPRITE_STATE_NODISP) {
+			switch (sprites[i].type) {
+				case TYPE_CIRCLE:
+					if (sprites[i].pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
+						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
+							SPRITE_INFO tmp = defaultSprite;
+							tmp.attr = &SHOT_ATTR;
+							tmp.type = TYPE_SHOT;
+							tmp.pos[X] = x;
+							tmp.pos[Y] = y;
+							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
+							addSprite(tmp);
+							sprites[i].state = SPRITE_STATE_NODISP;
+							return 1;
+						}
 					}
-				}
-			break;
+				break;
+			}
 		}
-		count++;
-		slPrintHex(count, slLocate(0,2));
-		ptr = ptr->next;
 	}
 	return 0;
 }
@@ -399,62 +385,52 @@ static void updateSprites(void)
 {
 	slPrint("updateSprites", slLocate(0,0));
 	int i;
-	SpriteNode ptr = headNode;
-	int count = 0;
-	Uint8 deleted ;
-	while (ptr != NULL) {
-		deleted = 0;
-		switch(ptr->sprite.type) {
-		case TYPE_NULL:
-			break;
-		case TYPE_CIRCLE:
-			if (ptr->sprite.state != STATE_DEAD) {
-				if (MapRead(playfield, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
-					ptr->sprite.state = STATE_DEAD;
-					break;
+	for (i = 0; i < MAX_SPRITES; i++) {
+		if (sprites[i].state != SPRITE_STATE_NODISP) {
+			switch(sprites[i].type) {
+			case TYPE_NULL:
+				break;
+			case TYPE_CIRCLE:
+				if (sprites[i].state != SPRITE_STATE_FALL) {
+					if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+						sprites[i].state = SPRITE_STATE_FALL;
+						break;
+					}
+					if (slRandom() > toFIXED(0.5))
+						sprites[i].ang += 10;
+					else
+						sprites[i].ang -= 10;
+					sprites[i].dx = slCos(DEGtoANG(sprites[i].ang));
+					sprites[i].dy = slSin(DEGtoANG(sprites[i].ang));
+					sprites[i].pos[X] += sprites[i].dx;
+					sprites[i].pos[Y] += sprites[i].dy;
+					
+					if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+						sprites[i].pos[X] -= sprites[i].dx;
+						sprites[i].pos[Y] -= sprites[i].dy;
+						sprites[i].ang += 90;
+					}
 				}
-				if (slRandom() > toFIXED(0.5))
-					ptr->sprite.ang += 10;
-				else
-					ptr->sprite.ang -= 10;
-				ptr->sprite.dx = slCos(DEGtoANG(ptr->sprite.ang));
-				ptr->sprite.dy = slSin(DEGtoANG(ptr->sprite.ang));
-				ptr->sprite.pos[X] += ptr->sprite.dx;
-				ptr->sprite.pos[Y] += ptr->sprite.dy;
-				
-				if (MapRead(playfield, fixedToUint16(ptr->sprite.pos[X] >> 4), fixedToUint16(ptr->sprite.pos[Y] >> 4)) == 0x0000) {
-					ptr->sprite.pos[X] -= ptr->sprite.dx;
-					ptr->sprite.pos[Y] -= ptr->sprite.dy;
-					ptr->sprite.ang += 90;
-				}
-			}
-			else {
-				if (ptr->sprite.pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
-					ptr->sprite.pos[S] -= toFIXED(0.02);
 				else {
-					deleteSpriteNode(&headNode, ptr);
-					deleted = 1;
+					if (sprites[i].pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
+						sprites[i].pos[S] -= toFIXED(0.02);
+					else {
+						sprites[i].state = SPRITE_STATE_NODISP;
+					}
 				}
+				break;
+			case TYPE_SHOT:
+				sprites[i].pos[X] += sprites[i].dx;
+				sprites[i].pos[Y] += sprites[i].dy;
+				if (checkShotCollision(i))
+					sprites[i].state = SPRITE_STATE_NODISP;
+				else if (abs(sprites[i].pos[X] - screenX) > SCREEN_BOUND_R || //remove shot sprite if it goes offscreen
+					abs(sprites[i].pos[Y] - screenY) > SCREEN_BOUND_B) {
+						sprites[i].state = SPRITE_STATE_NODISP;
+					}
+				break;
 			}
-			break;
-		case TYPE_SHOT:
-			ptr->sprite.pos[X] += ptr->sprite.dx;
-			ptr->sprite.pos[Y] += ptr->sprite.dy;
-			if (checkShotCollision(ptr))
-				deleteSpriteNode(&headNode, ptr);
-			else if (abs(ptr->sprite.pos[X] - screenX) > SCREEN_BOUND_R || //remove shot sprite if it goes offscreen
-				abs(ptr->sprite.pos[Y] - screenY) > SCREEN_BOUND_B) {
-					deleteSpriteNode(&headNode, ptr);
-					deleted = 1;
-				}
-			break;
 		}
-		count++;
-		slPrintHex(count, slLocate(0,2));
-		if (ptr->next != NULL && !deleted) 
-			ptr = ptr->next;
-		else
-			break;
 	}
 }
 
@@ -474,36 +450,32 @@ static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED s
 		*dy = toFIXED(2);	
 }
 
-static Uint8 checkShotCollision(SpriteNode node) 
+static Uint8 checkShotCollision(int index) 
 {
 	slPrint("checkShotCollision", slLocate(0,0));
-	SpriteNode ptr = headNode;
-	FIXED x = node->sprite.pos[X];
-	FIXED y = node->sprite.pos[Y];
-	int count = 0;
-	while (ptr != NULL) {
-		if (ptr != node){
-			switch (ptr->sprite.type) {
+	FIXED x = sprites[index].pos[X];
+	FIXED y = sprites[index].pos[Y];
+	int i;
+	for (i = 0; i < MAX_SPRITES; i++) {
+		if (sprites[i].state != SPRITE_STATE_NODISP && i != index){
+			switch (sprites[i].type) {
 				case TYPE_CIRCLE:
-					if (ptr->sprite.pos[X] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < x && ptr->sprite.pos[X] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > x) {
-						if (ptr->sprite.pos[Y] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < y && ptr->sprite.pos[Y] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > y) {
+					if (sprites[i].pos[X] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < x && sprites[i].pos[X] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > x) {
+						if (sprites[i].pos[Y] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < y && sprites[i].pos[Y] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > y) {
 							SPRITE_INFO tmp = defaultSprite;
-							tmp.attr = SHOT_ATTR;
+							tmp.attr = &SHOT_ATTR;
 							tmp.type = TYPE_SHOT;
-							tmp.pos[X] = ptr->sprite.pos[X];
-							tmp.pos[Y] = ptr->sprite.pos[Y];
-							setShotVelocity(x, y, ptr->sprite.pos[X], ptr->sprite.pos[Y], &tmp.dx, &tmp.dy);
-							deleteSpriteNode(&headNode, ptr);
-							addSpriteNode(headNode, tmp);
+							tmp.pos[X] = sprites[i].pos[X];
+							tmp.pos[Y] = sprites[i].pos[Y];
+							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
+							sprites[i].state = SPRITE_STATE_NODISP;
+							addSprite(tmp);
 							return 1;
 						}
 					}
 				break;
 			}
 		}
-		count++;
-		slPrintHex(count, slLocate(0,2));
-		ptr = ptr->next;
 	}
 	return 0;
 	
@@ -514,36 +486,33 @@ static void dispSprites(void)
 	slPrint("dispSprites", slLocate(0,0));
 	int i;
 	FIXED spritePos[XYZS];
-	SpriteNode ptr = headNode;
-	while (ptr != NULL) {
-		while (!dispFace && ptr->sprite.type == TYPE_FACE) {
-			if (ptr->next != NULL)
-				ptr = ptr->next;
+	for (i = 0; i < MAX_SPRITES; i++) {
+		if (sprites[i].state != SPRITE_STATE_NODISP) {
+			slPrintHex(i, slLocate(0,6));
+			while (!dispFace && sprites[i].type == TYPE_FACE) {
+				if (i >= MAX_SPRITES)
+					break;
+				else
+					i++;
+			}
+			if (sprites[i].type == TYPE_FACE) {
+				spritePos[X] = sprites[i].pos[X];
+				spritePos[Y] = sprites[i].pos[Y];
+				spritePos[Z] = sprites[i].pos[Z];
+			}
+			else {
+				spritePos[X] = slMulFX(sprites[i].pos[X] - screenX, scale);
+				spritePos[Y] = slMulFX(sprites[i].pos[Y] - screenY, scale);
+				spritePos[Z] = toFIXED(169);
+			}
+			if (sprites[i].state == SPRITE_STATE_FALL)
+				spritePos[S] = slMulFX(sprites[i].pos[S], scale);
+			else if (sprites[i].type == TYPE_NULL || sprites[i].type == TYPE_FACE)
+				spritePos[S] = sprites[i].pos[S];
 			else
-				break;
+				spritePos[S] = scale;
+			slDispSprite(spritePos, sprites[i].attr, DEGtoANG(sprites[i].ang));
 		}
-		if (ptr->sprite.type == TYPE_FACE) {
-			spritePos[X] = ptr->sprite.pos[X];
-			spritePos[Y] = ptr->sprite.pos[Y];
-			spritePos[Z] = ptr->sprite.pos[Z];
-		}
-		else {
-			spritePos[X] = slMulFX(ptr->sprite.pos[X] - screenX, scale);
-			spritePos[Y] = slMulFX(ptr->sprite.pos[Y] - screenY, scale);
-			spritePos[Z] = toFIXED(169);
-		}
-		if (ptr->sprite.state == STATE_DEAD)
-			spritePos[S] = slMulFX(ptr->sprite.pos[S], scale);
-		else if (ptr->sprite.type == TYPE_NULL || ptr->sprite.type == TYPE_FACE)
-			spritePos[S] = ptr->sprite.pos[S];
-		else
-			spritePos[S] = scale;
-		//slPrintFX(spriteScale, slLocate(0,6));
-		slDispSprite(spritePos, &ptr->sprite.attr, DEGtoANG(ptr->sprite.ang));
-		if (ptr->next != NULL)
-			ptr = ptr->next;
-		else
-			break;
 	}
 }
 
@@ -597,19 +566,19 @@ void loadSpritePos(FIXED posArr[], int size)
 	SPRITE_INFO tmp;
 	initSprites();
 	tmp = defaultSprite;
-	tmp.attr = CIRCLE_ATTR;
+	tmp.attr = &CIRCLE_ATTR;
 	tmp.type = TYPE_CIRCLE;
 	for (i = 0; i < size; i++) {
 		tmp.pos[X] = posArr[i];
 		i++;
 		tmp.pos[Y] = posArr[i];
-		addSpriteNode(headNode, tmp);
+		addSprite(tmp);
 	}
 }
 
 void runLevel(void)
 {
-	SpriteNode player; //player sprite for animate up
+	int player; //player sprite for animate up
 	gameState = GAME_STATE_START;
 	#define NORMAL_COL_RATIO 0x0f
 	Uint8 colorRatio = 0x00;
@@ -617,35 +586,25 @@ void runLevel(void)
 	initGame();
 	dispFace = 0;
 	SPRITE_INFO tmp = defaultSprite;
-	tmp.attr = PLAYER_ATTR;
-	tmp.type = TYPE_NULL;
-	tmp.pos[X] = screenX;
-	tmp.pos[Y] = screenY;
+	tmp.attr = &CIRCLE_ATTR;
+	tmp.type = TYPE_CIRCLE;
+	tmp.state = SPRITE_STATE_NORM;
+	tmp.pos[X] = toFIXED(0);
+	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
-	player = addSpriteNode(headNode, tmp);
-	
-	//TEMP below here: remove at some point
-	// slColRateNbg1(colorRatio);
-	// initSprites();
+	player = addSprite(tmp);
 	while (1) {
-		// handleInput();
-		// updateBG();
-		// updateSprites();
-		// dispSprites();
-		// drawPlayField();
-		// slSynch();
-		
 		switch (gameState) {
 			case GAME_STATE_START:
 				updateBG();
 				dispSprites();
 				drawPlayField();
 				slSynch();
-				if (player->sprite.pos[S] > toFIXED(1.0)) {
-					player->sprite.pos[S] -= toFIXED(0.1);
+				if (sprites[player].pos[S] > toFIXED(1.0)) {
+					sprites[player].pos[S] -= toFIXED(0.1);
 				}
 				else {
-					deleteSpriteNode(&headNode, player);
+					sprites[player].state = SPRITE_STATE_NODISP;
 					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
 					dispFace = 1;
 					gameState = GAME_STATE_FADEIN;
@@ -672,9 +631,9 @@ void runLevel(void)
 				drawPlayField();
 				slPrintHex(numSprites, slLocate(0,7));
 				slSynch();
-				if (numSprites <= NUM_PLAYER_SPRITES) {
-					gameState = GAME_STATE_FADEOUT;
-				}
+				// if (numSprites <= NUM_PLAYER_SPRITES) {
+					// gameState = GAME_STATE_FADEOUT;
+				// }
 			break;
 			case GAME_STATE_FADEOUT:
 				if (colorRatio > 0) {
@@ -689,12 +648,12 @@ void runLevel(void)
 					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON);
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
-					tmp.attr = PLAYER_ATTR;
+					tmp.attr = &PLAYER_ATTR;
 					tmp.type = TYPE_NULL;
 					tmp.pos[X] = screenX;
 					tmp.pos[Y] = screenY;
 					tmp.pos[S] = toFIXED(1.0);
-					player = addSpriteNode(headNode, tmp);
+					player = addSprite(tmp);
 					gameState = GAME_STATE_COMPLETE;
 				}
 			break;
@@ -703,12 +662,12 @@ void runLevel(void)
 				updateBG();
 				drawPlayField();
 				slSynch();
-				if (player->sprite.pos[S] < toFIXED(6.0)) {
-					player->sprite.pos[S] += toFIXED(0.1);
-					player->sprite.ang += 10;
+				if (sprites[player].pos[S] < toFIXED(6.0)) {
+					sprites[player].pos[S] += toFIXED(0.1);
+					sprites[player].ang += 10;
 				}
 				else {
-					clearSpriteList(&headNode);
+					clearSpriteList();
 					return;
 				}
 			break;
