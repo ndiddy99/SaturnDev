@@ -344,6 +344,19 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 						}
 					}
 				break;
+				case TYPE_PUSH:
+					if (sprites[i].pos[X] - SPR_SIZE[TYPE_PUSH] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
+						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_PUSH] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_PUSH] > y) {
+							if (sprites[i].pos[X] > screenX)
+								sprites[i].pos[X] += (sprites[i].pos[X] - screenX);
+							else
+								sprites[i].pos[X] -= (screenX - sprites[i].pos[X]);
+							if (sprites[i].pos[Y] > screenY)
+								sprites[i].pos[Y] += (sprites[i].pos[Y] - screenY);
+							else
+								sprites[i].pos[Y] -= (screenY - sprites[i].pos[Y]);
+						}
+					}
 			}
 		}
 	}
@@ -391,6 +404,7 @@ static void updateSprites(void)
 			case TYPE_NULL:
 				break;
 			case TYPE_CIRCLE:
+			case TYPE_PUSH:
 				if (sprites[i].state != SPRITE_STATE_FALL) {
 					if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
 						sprites[i].state = SPRITE_STATE_FALL;
@@ -518,7 +532,7 @@ static void dispSprites(void)
 
 static void drawPlayField(void)
 {
-	#define PLAYFIELD_START_INDEX 5
+	#define PLAYFIELD_START_INDEX 20
 	int i = 0;
 	int x, y;
 	Uint16 currVal;
@@ -547,7 +561,7 @@ static void initGame(void)
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
 	slTVOff();
-	set_sprite(pic_sprites, 8, tex_sprites);
+	set_sprite(pic_sprites, 23, tex_sprites);
 	initVDP2();
 	slTVOn();
 }
@@ -566,8 +580,8 @@ void loadSpritePos(FIXED posArr[], int size)
 	SPRITE_INFO tmp;
 	initSprites();
 	tmp = defaultSprite;
-	tmp.attr = &CIRCLE_ATTR;
-	tmp.type = TYPE_CIRCLE;
+	tmp.attr = &PUSH_ATTR;
+	tmp.type = TYPE_PUSH;
 	for (i = 0; i < size; i++) {
 		tmp.pos[X] = posArr[i];
 		i++;

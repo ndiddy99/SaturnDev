@@ -2,6 +2,7 @@
 #include "game.h"
 #include "assetrefs.h"
 #include "spritepos1.h"
+
 FIXED spritepos1[] = {
 	toFIXED(90.0), toFIXED(90.0),
 	toFIXED(90.0), toFIXED(90.0),
