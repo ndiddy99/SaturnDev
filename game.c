@@ -172,6 +172,7 @@ static void initSprites(void)
 	defaultSprite.dx = toFIXED(0.0);
 	defaultSprite.dy = toFIXED(0.0);
 	defaultSprite.state = SPRITE_STATE_NORM;
+	defaultSprite.scratchpad = 0;
 	//add eye sprites
 	SPRITE_INFO info = defaultSprite;
 	info.attr = &SCLERA_ATTR;
@@ -323,6 +324,7 @@ static void handlePlayerMovement(void)
 
 static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 {
+	//NEED TO RETURN 1 AFTER COLLISION!
 	slPrint("handleSpriteCollision", slLocate(0,0));
 	//if ball x > sprite x1 and < sprite x2 
 	int i;
@@ -347,14 +349,10 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 				case TYPE_PUSH:
 					if (sprites[i].pos[X] - SPR_SIZE[TYPE_PUSH] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
 						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_PUSH] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_PUSH] > y) {
-							if (sprites[i].pos[X] > screenX)
-								sprites[i].pos[X] += (sprites[i].pos[X] - screenX);
-							else
-								sprites[i].pos[X] -= (screenX - sprites[i].pos[X]);
-							if (sprites[i].pos[Y] > screenY)
-								sprites[i].pos[Y] += (sprites[i].pos[Y] - screenY);
-							else
-								sprites[i].pos[Y] -= (screenY - sprites[i].pos[Y]);
+							sprites[i].dx = (sprites[i].pos[X] - screenX) >> 1;
+							sprites[i].dy = (sprites[i].pos[Y] - screenY) >> 1;
+							sprites[i].scratchpad = 1;
+							return 1;
 						}
 					}
 			}
@@ -394,17 +392,18 @@ static void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
 		MapWrite(playfield, x, y, data);
 }
 
+#define FRICTION toFIXED(0.5)
 static void updateSprites(void)
 {
 	slPrint("updateSprites", slLocate(0,0));
 	int i;
+	FIXED dx, dy;
 	for (i = 0; i < MAX_SPRITES; i++) {
 		if (sprites[i].state != SPRITE_STATE_NODISP) {
 			switch(sprites[i].type) {
 			case TYPE_NULL:
 				break;
 			case TYPE_CIRCLE:
-			case TYPE_PUSH:
 				if (sprites[i].state != SPRITE_STATE_FALL) {
 					if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
 						sprites[i].state = SPRITE_STATE_FALL;
@@ -432,7 +431,54 @@ static void updateSprites(void)
 						deleteSprite(i);
 					}
 				}
-				break;
+			break;
+			case TYPE_PUSH:
+				if (sprites[i].state != SPRITE_STATE_FALL) {
+					if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+						sprites[i].state = SPRITE_STATE_FALL;
+						break;
+					}
+					if (sprites[i].scratchpad == 1) { //if sprite's been pushed by player
+						if (sprites[i].dx > 0)
+							sprites[i].dx -= FRICTION;
+						else if (sprites[i].dx < 0)
+							sprites[i].dx += FRICTION;
+						if (sprites[i].dy > 0)
+							sprites[i].dy -= FRICTION;
+						else if (sprites[i].dy < 0)
+							sprites[i].dy += FRICTION;
+						sprites[i].pos[X] += sprites[i].dx;
+						sprites[i].pos[Y] += sprites[i].dy;
+						if ((sprites[i].dx > 0 ? sprites[i].dx : -sprites[i].dx) < toFIXED(0.5) && 
+							(sprites[i].dy > 0 ? sprites[i].dy : -sprites[i].dy) < toFIXED(0.5)) {
+							sprites[i].scratchpad = 0;
+						}
+					}
+					else {
+						if (slRandom() > toFIXED(0.5))
+							sprites[i].ang += 10;
+						else
+							sprites[i].ang -= 10;
+						sprites[i].dx = slCos(DEGtoANG(sprites[i].ang));
+						sprites[i].dy = slSin(DEGtoANG(sprites[i].ang));
+						sprites[i].pos[X] += sprites[i].dx;
+						sprites[i].pos[Y] += sprites[i].dy;
+						
+						if (MapRead(playfield, fixedToUint16(sprites[i].pos[X] >> 4), fixedToUint16(sprites[i].pos[Y] >> 4)) == 0x0000) {
+							sprites[i].pos[X] -= sprites[i].dx;
+							sprites[i].pos[Y] -= sprites[i].dy;
+							sprites[i].ang += 90;
+						}
+					}
+				}
+				else {
+					if (sprites[i].pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
+						sprites[i].pos[S] -= toFIXED(0.02);
+					else {
+						deleteSprite(i);
+					}
+				}				
+			break;
 			case TYPE_SHOT:
 				sprites[i].pos[X] += sprites[i].dx;
 				sprites[i].pos[Y] += sprites[i].dy;

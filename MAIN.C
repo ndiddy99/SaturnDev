@@ -28,9 +28,9 @@ void ss_main(void) { //entry point for program
 		loadLevel(map_map1);
 		loadSpritePos(spritepos1, sizeof(spritepos1)/sizeof(FIXED));
 		runLevel();
-		loadLevel(map_map2);
-		loadSpritePos(spritepos2, sizeof(spritepos2)/sizeof(FIXED));
-		runLevel();
+		// loadLevel(map_map2);
+		// loadSpritePos(spritepos2, sizeof(spritepos2)/sizeof(FIXED));
+		// runLevel();
 	}
 }
 

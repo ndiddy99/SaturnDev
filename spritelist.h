@@ -3,11 +3,12 @@
 
 typedef struct SpriteInfo {
 	FIXED pos[XYZS];
-	Uint16 ang;
-	SPR_ATTR* attr;
+	Uint16 ang; //angle in degrees
+	SPR_ATTR* attr; //pointer to sprite's SPR_ATTR thing
 	FIXED dx, dy;
-	Uint8 type;
+	Uint8 type; 
 	Uint8 state;
+	Uint8 scratchpad; //stores temporary per-sprite values
 } SPRITE_INFO;
 
 #define TYPE_NULL 0
