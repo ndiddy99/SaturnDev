@@ -20,6 +20,8 @@ extern Uint8 cel_road[];
 extern Uint16 pal_cloud[];
 extern Uint16 map_cloud[];
 extern Uint8 cel_cloud[];
+
+extern Uint16 checkerboard[];
 // extern Uint16 yama_map[];
 // extern Uint16 yama_pal[];
 // extern Uint8 yama_cel[];

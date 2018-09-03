@@ -15,6 +15,8 @@
 #include "assets\cloud.cel"
 #include "assets\cloud.map"
 #include "assets\cloud.pal"
+
+#include "assets\checkerboard.c"
 // #include "assets\YAMA.CEL"
 // #include "assets\YAMA.MAP"
 // #include "assets\YAMA.PAL"
