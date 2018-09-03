@@ -174,7 +174,7 @@ defaultSprite       0x24              game.o
 eye2Index           0x4               game.o
 errno               0x4               c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
 gameState           0x4               game.o
-lut                 0x23000           framebuffer.o
+lut                 0x2300            framebuffer.o
 dispFace            0x1               game.o
 
 Memory Configuration
@@ -192,7 +192,7 @@ SLSTART         0x06004000       0x30
                 0x06004002                slStartSGL
                 0x06004000                SGL_Start
 
-.text           0x06004040     0x3e00
+.text           0x06004040     0x3df0
  *(.text)
  .text          0x06004040       0x50 C:\saturn\sgl302j\SAMPLE\common/cinit.o
                 0x06004040                main
@@ -202,118 +202,118 @@ SLSTART         0x06004000       0x30
                 0x06004f70                loadSpritePos
                 0x06004f40                loadLevel
                 0x06005170                runLevel
- .text          0x06005790      0x200 framebuffer.o
+ .text          0x06005790      0x1f0 framebuffer.o
                 0x06005790                runFramebuffer
- .text          0x06005990       0xf0 scrollfunctions.o
-                0x06005a30                MapRead
-                0x06005a50                Pal2CRAM
-                0x060059b0                Map2VRAM
-                0x06005a10                MapWrite
-                0x06005990                Cel2VRAM
- .text          0x06005a80       0xd0 spritelist.o
-                0x06005b00                deleteSprite
-                0x06005a80                addSprite
-                0x06005b30                clearSpriteList
- .text          0x06005b50      0x128 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
-                0x06005b50                slInitSystem
- *fill*         0x06005c78        0x8 00
- .text          0x06005c80       0xc0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
-                0x06005d00                __main
-                0x06005c80                __do_global_dtors
-                0x06005cc0                __do_global_ctors
- .text          0x06005d40      0x110 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_si_to_df.o)
-                0x06005d50                __floatsidf
- .text          0x06005e50      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_mul_df.o)
-                0x06005e70                __muldf3
- .text          0x06006110      0x180 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_div_df.o)
-                0x06006120                __divdf3
- .text          0x06006290       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_df_to_si.o)
-                0x06006290                __fixdfsi
- .text          0x06006320       0x80 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftrt_n.o)
-                0x06006320                __ashrsi3
- .text          0x060063a0      0x270 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_pack_df.o)
-                0x060063c0                __pack_d
- .text          0x06006610      0x160 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_unpack_df.o)
-                0x06006630                __unpack_d
- .text          0x06006770       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_thenan_df.o)
-                0x06006770                __thenan_df
- .text          0x06006790       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshrdi3.o)
-                0x06006790                __lshrdi3
- .text          0x06006820       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashldi3.o)
-                0x06006820                __ashldi3
- .text          0x060068b0       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftlt.o)
-                0x060068b0                __ashlsi3
- .text          0x06006940       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshiftrt.o)
-                0x06006940                __lshrsi3
- .text          0x060069d0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memcpy.o)
-                0x060069d0                memcpy
- .text          0x06006a70       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memset.o)
-                0x06006a70                memset
- .text          0x06006ab0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
-                0x06006ab0                atexit
- .text          0x06006b50       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
-                0x06006b50                _global_impure_ptr
- .text          0x06006b60       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
-                0x06006b80                free
-                0x06006b60                malloc
- .text          0x06006ba0      0x680 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
-                0x06006ba0                _malloc_r
- .text          0x06007220      0x3b0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
-                0x06007220                _malloc_trim_r
-                0x06007320                _free_r
- .text          0x060075d0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
-                0x060075d0                __malloc_lock
-                0x060075e0                __malloc_unlock
- .text          0x060075f0       0x50 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
-                0x060075f0                _sbrk_r
- .text          0x06007640      0x430 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
-                0x060077f0                _exit
-                0x06007830                _getpid
-                0x060078b0                _utime
-                0x06007680                _write
-                0x06007640                _read
-                0x060077d0                _unlink
-                0x06007790                _open
-                0x06007850                _stat
-                0x060077e0                isatty
-                0x060078f0                _wait
-                0x06007810                _kill
-                0x06007870                _chmod
-                0x06007930                _execv
-                0x06007910                _execve
-                0x06007a30                __setup_argv_and_call_main
-                0x06007980                _gettimeofday
-                0x060076c0                _link
-                0x06007840                _raise
-                0x060077b0                _creat
-                0x06007950                _pipe
-                0x06007890                _chown
-                0x06007660                _lseek
-                0x060076a0                _close
-                0x06007970                _times
-                0x06007770                _fstat
-                0x060078d0                _fork
-                0x060076f0                _sbrk
- .text          0x06007a70       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(trap.o)
-                0x06007a70                __trap34
- .text          0x06007a90       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
-                0x06007a90                abort
- .text          0x06007ab0      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
-                0x06007b90                _raise_r
-                0x06007d50                __sigtramp
-                0x06007cf0                raise
-                0x06007d30                _init_signal
-                0x06007c70                __sigtramp_r
-                0x06007d10                signal
-                0x06007b00                _signal_r
-                0x06007ab0                _init_signal_r
- .text          0x06007d70       0x60 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
-                0x06007dc0                _getpid_r
-                0x06007d70                _kill_r
- .text          0x06007dd0       0x70 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_udivsi3.o)
-                0x06007df2                __udivsi3
+ .text          0x06005980       0xf0 scrollfunctions.o
+                0x06005a20                MapRead
+                0x06005a40                Pal2CRAM
+                0x060059a0                Map2VRAM
+                0x06005a00                MapWrite
+                0x06005980                Cel2VRAM
+ .text          0x06005a70       0xd0 spritelist.o
+                0x06005af0                deleteSprite
+                0x06005a70                addSprite
+                0x06005b20                clearSpriteList
+ .text          0x06005b40      0x128 C:\saturn\sgl302j/lib\libsgl.a(sglIc0.o)
+                0x06005b40                slInitSystem
+ *fill*         0x06005c68        0x8 00
+ .text          0x06005c70       0xc0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
+                0x06005cf0                __main
+                0x06005c70                __do_global_dtors
+                0x06005cb0                __do_global_ctors
+ .text          0x06005d30      0x110 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_si_to_df.o)
+                0x06005d40                __floatsidf
+ .text          0x06005e40      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_mul_df.o)
+                0x06005e60                __muldf3
+ .text          0x06006100      0x180 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_div_df.o)
+                0x06006110                __divdf3
+ .text          0x06006280       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_df_to_si.o)
+                0x06006280                __fixdfsi
+ .text          0x06006310       0x80 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftrt_n.o)
+                0x06006310                __ashrsi3
+ .text          0x06006390      0x270 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_pack_df.o)
+                0x060063b0                __pack_d
+ .text          0x06006600      0x160 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_unpack_df.o)
+                0x06006620                __unpack_d
+ .text          0x06006760       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_thenan_df.o)
+                0x06006760                __thenan_df
+ .text          0x06006780       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshrdi3.o)
+                0x06006780                __lshrdi3
+ .text          0x06006810       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashldi3.o)
+                0x06006810                __ashldi3
+ .text          0x060068a0       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashiftlt.o)
+                0x060068a0                __ashlsi3
+ .text          0x06006930       0x90 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshiftrt.o)
+                0x06006930                __lshrsi3
+ .text          0x060069c0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memcpy.o)
+                0x060069c0                memcpy
+ .text          0x06006a60       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(memset.o)
+                0x06006a60                memset
+ .text          0x06006aa0       0xa0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
+                0x06006aa0                atexit
+ .text          0x06006b40       0x10 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
+                0x06006b40                _global_impure_ptr
+ .text          0x06006b50       0x40 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
+                0x06006b70                free
+                0x06006b50                malloc
+ .text          0x06006b90      0x680 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+                0x06006b90                _malloc_r
+ .text          0x06007210      0x3b0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
+                0x06007210                _malloc_trim_r
+                0x06007310                _free_r
+ .text          0x060075c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
+                0x060075c0                __malloc_lock
+                0x060075d0                __malloc_unlock
+ .text          0x060075e0       0x50 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
+                0x060075e0                _sbrk_r
+ .text          0x06007630      0x430 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+                0x060077e0                _exit
+                0x06007820                _getpid
+                0x060078a0                _utime
+                0x06007670                _write
+                0x06007630                _read
+                0x060077c0                _unlink
+                0x06007780                _open
+                0x06007840                _stat
+                0x060077d0                isatty
+                0x060078e0                _wait
+                0x06007800                _kill
+                0x06007860                _chmod
+                0x06007920                _execv
+                0x06007900                _execve
+                0x06007a20                __setup_argv_and_call_main
+                0x06007970                _gettimeofday
+                0x060076b0                _link
+                0x06007830                _raise
+                0x060077a0                _creat
+                0x06007940                _pipe
+                0x06007880                _chown
+                0x06007650                _lseek
+                0x06007690                _close
+                0x06007960                _times
+                0x06007760                _fstat
+                0x060078c0                _fork
+                0x060076e0                _sbrk
+ .text          0x06007a60       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(trap.o)
+                0x06007a60                __trap34
+ .text          0x06007a80       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
+                0x06007a80                abort
+ .text          0x06007aa0      0x2c0 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
+                0x06007b80                _raise_r
+                0x06007d40                __sigtramp
+                0x06007ce0                raise
+                0x06007d20                _init_signal
+                0x06007c60                __sigtramp_r
+                0x06007d00                signal
+                0x06007af0                _signal_r
+                0x06007aa0                _init_signal_r
+ .text          0x06007d60       0x60 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
+                0x06007db0                _getpid_r
+                0x06007d60                _kill_r
+ .text          0x06007dc0       0x70 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_udivsi3.o)
+                0x06007de2                __udivsi3
  *(.strings)
-                0x06007e40                __etext = .
+                0x06007e30                __etext = .
 
 SLPROG          0x06007e40    0x12430
                 0x06007e40                __slprog_start = .
@@ -643,7 +643,7 @@ SLPROG          0x06007e40    0x12430
                 0x0602f710                __malloc_sbrk_base
                 0x0602fb20                __edata = .
 
-.bss            0x0602fb20    0x25714
+.bss            0x0602fb20     0x4a14
                 0x0602fb20                __bstart = .
  *(.bss)
  .bss           0x0602fb20      0x200 assets.o
@@ -677,14 +677,14 @@ SLPROG          0x06007e40    0x12430
                 0x06032228                gameState
                 0x0603222c                dispFace
  *fill*         0x0603222d        0x3 00
- COMMON         0x06032230    0x23000 framebuffer.o
+ COMMON         0x06032230     0x2300 framebuffer.o
                                   0x0 (size before relaxing)
                 0x06032230                lut
- COMMON         0x06055230        0x4 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+ COMMON         0x06034530        0x4 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
                                   0x0 (size before relaxing)
-                0x06055230                errno
-                0x06055234                __bend = .
-                0x06055234                _end = .
+                0x06034530                errno
+                0x06034534                __bend = .
+                0x06034534                _end = .
 LOAD C:\saturn\sgl302j\SAMPLE\common/cinit.o
 LOAD C:\saturn\sgl302j/lib/sglarea.o
 LOAD main.o
@@ -699,32 +699,32 @@ LOAD c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../.
 LOAD c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a
 OUTPUT(sl.coff coff-sh)
 
-.comment        0x06055240      0x380
- .comment       0x06055240       0x20 C:\saturn\sgl302j\SAMPLE\common/cinit.o
- .comment       0x06055260       0x20 main.o
- .comment       0x06055280       0x20 assets.o
- .comment       0x060552a0       0x20 game.o
- .comment       0x060552c0       0x20 framebuffer.o
- .comment       0x060552e0       0x20 scrollfunctions.o
- .comment       0x06055300       0x20 spritelist.o
- .comment       0x06055320       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
- .comment       0x06055340       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_si_to_df.o)
- .comment       0x06055360       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_mul_df.o)
- .comment       0x06055380       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_div_df.o)
- .comment       0x060553a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_df_to_si.o)
- .comment       0x060553c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_pack_df.o)
- .comment       0x060553e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_unpack_df.o)
- .comment       0x06055400       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_thenan_df.o)
- .comment       0x06055420       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshrdi3.o)
- .comment       0x06055440       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashldi3.o)
- .comment       0x06055460       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
- .comment       0x06055480       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
- .comment       0x060554a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
- .comment       0x060554c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
- .comment       0x060554e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
- .comment       0x06055500       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
- .comment       0x06055520       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
- .comment       0x06055540       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
- .comment       0x06055560       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
- .comment       0x06055580       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
- .comment       0x060555a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)
+.comment        0x06034540      0x380
+ .comment       0x06034540       0x20 C:\saturn\sgl302j\SAMPLE\common/cinit.o
+ .comment       0x06034560       0x20 main.o
+ .comment       0x06034580       0x20 assets.o
+ .comment       0x060345a0       0x20 game.o
+ .comment       0x060345c0       0x20 framebuffer.o
+ .comment       0x060345e0       0x20 scrollfunctions.o
+ .comment       0x06034600       0x20 spritelist.o
+ .comment       0x06034620       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(__main.o)
+ .comment       0x06034640       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_si_to_df.o)
+ .comment       0x06034660       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_mul_df.o)
+ .comment       0x06034680       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_div_df.o)
+ .comment       0x060346a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_df_to_si.o)
+ .comment       0x060346c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_pack_df.o)
+ .comment       0x060346e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_unpack_df.o)
+ .comment       0x06034700       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_thenan_df.o)
+ .comment       0x06034720       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_lshrdi3.o)
+ .comment       0x06034740       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/m2\libgcc.a(_ashldi3.o)
+ .comment       0x06034760       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(atexit.o)
+ .comment       0x06034780       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(impure.o)
+ .comment       0x060347a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(malloc.o)
+ .comment       0x060347c0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mallocr.o)
+ .comment       0x060347e0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(freer.o)
+ .comment       0x06034800       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(mlock.o)
+ .comment       0x06034820       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(sbrkr.o)
+ .comment       0x06034840       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(syscalls.o)
+ .comment       0x06034860       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(abort.o)
+ .comment       0x06034880       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signal.o)
+ .comment       0x060348a0       0x20 c:/saturn/SH_COFF/sh-coff/bin/../lib/gcc/sh-coff/3.4-GNUSH_v0501/../../../../sh-coff/lib/m2\libc.a(signalr.o)

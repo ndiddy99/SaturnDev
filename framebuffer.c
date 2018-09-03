@@ -7,21 +7,21 @@
 #define videoMem ((Uint16*)VDP2_VRAM_A0)
 #define TEXTURE_WIDTH 128
 #define TEXTURE_HEIGHT 128
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 224
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 112
 
 static void initVDP2(void);
 static void createLut(void);
 static void render(int time);
 
-Uint8 lut[SCREEN_WIDTH*SCREEN_HEIGHT*2];
+Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)/2];
 
 static void initVDP2(void) {
 	slTVOff();
 	slBitMapNbg1(COL_TYPE_32768, BM_512x256, (void *)VDP2_VRAM_A0);
 	slScrPosNbg1(toFIXED(0.0), toFIXED(0.0));
 	slZoomModeNbg1(ZOOM_1);
-	slZoomNbg1(toFIXED(1.0), toFIXED(1.0));  
+	slZoomNbg1(toFIXED(0.5), toFIXED(0.5));  
 	slScrAutoDisp(NBG0ON | NBG1ON);
 }
 
@@ -49,7 +49,7 @@ static void render(int time) {
 	int i,j;
 	for (j = 0; j < SCREEN_HEIGHT; j++) {
 		for (i = 0; i < SCREEN_WIDTH; i++) {
-			int offset = SCREEN_WIDTH*j + i;
+			int offset = (SCREEN_WIDTH)*j + i;
 			int u = lut[(offset << 1)+0] + time;
 			int v = lut[(offset << 1)+1] + time;
 			videoMem[512*j+i]=checkerboard[128*(v&127)+(u&127)];
@@ -68,7 +68,7 @@ void runFramebuffer(void) {
 	// }
 	slTVOn();
 	while(1) {
-		render(i++);
+		render(i+=3);
 		slPrintHex(i, slLocate(0,0));
 		slSynch();
 	}
