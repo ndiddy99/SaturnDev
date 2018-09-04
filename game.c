@@ -17,22 +17,17 @@ Add level begin/end animations (done)
 #include "assetrefs.h"
 #include "spritelist.h"
 
-#define		RBG0_CEL_ADR		VDP2_VRAM_A0
-#define		RBG0_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
-#define		RBG0_COL_ADR		( VDP2_COLRAM + 0x00200 )
-#define		RBG0_PAR_ADR		( VDP2_VRAM_A0 + 0x1fe00 )
+#define		NBG1_CEL_ADR		VDP2_VRAM_A0
+#define		NBG1_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
+#define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00200 )
 
-#define		NBG1_CEL_ADR		( VDP2_VRAM_B0)
-#define		NBG1_MAP_ADR		( VDP2_VRAM_A1)
-#define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00400 )
-
-#define		NBG2_CEL_ADR		( VDP2_VRAM_B0 + 0x1000)
-#define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x800 )
-#define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00600 )
+#define		NBG2_CEL_ADR		( VDP2_VRAM_B0 )
+#define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x2000)
+#define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00400 )
 
 #define		NBG3_CEL_ADR		( VDP2_VRAM_B1 + 0x2000)
-#define		NBG3_MAP_ADR		( VDP2_VRAM_A1 + 0x1000 )
-#define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00800 )
+#define		NBG3_MAP_ADR		( VDP2_VRAM_A1)
+#define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00600 )
 
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
@@ -63,10 +58,10 @@ Uint8 dispFace; //1 if we're displaying the "player face" sprites, 0 otherwise
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
+FIXED bg1X = toFIXED(0.0);
+FIXED bg1Y = toFIXED(0.0);
 FIXED bg2X = toFIXED(0.0);
 FIXED bg2Y = toFIXED(0.0);
-FIXED bg3X = toFIXED(0.0);
-FIXED bg3Y = toFIXED(0.0);
 #define SCREEN_BOUND_L toFIXED(-160)
 #define SCREEN_BOUND_R toFIXED(160)
 #define SCREEN_BOUND_T toFIXED(-112)
@@ -202,20 +197,16 @@ static void initVDP2(void)
 {
 	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
-	
-	//init face
+		
+	//init road
 	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
 	slPageNbg1((void *)NBG1_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
 	slPlaneNbg1(PL_SIZE_1x1);
 	slMapNbg1((void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR);
-	Cel2VRAM(cel_face, (void *)NBG1_CEL_ADR, 16 * 64 * 4);
-	Map2VRAM(map_face, (void *)NBG1_MAP_ADR, 64, 64, 2, 0);
-	Pal2CRAM(pal_face, (void *)NBG1_COL_ADR, 256);
-	slScrPosNbg1(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
-	slPriorityNbg1(7);
-	slColorCalc(CC_RATE | CC_TOP | NBG1ON);
-	//slColRateNbg1(0x08); 
-	slColRateNbg1(0x00);
+	Cel2VRAM(cel_road, (void *)NBG1_CEL_ADR, 83 * 64 * 4);
+	Map2VRAM(map_road, (void *)NBG1_MAP_ADR, 64, 64, 1, 0); 
+	Pal2CRAM(pal_road, (void *)NBG1_COL_ADR, 256);
+	slScrPosNbg1(toFIXED(0), toFIXED(0));
 	
 	//init clouds
 	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -223,24 +214,28 @@ static void initVDP2(void)
 	slPlaneNbg2(PL_SIZE_1x1);
 	slMapNbg2((void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR);
 	Cel2VRAM(cel_cloud, (void *)NBG2_CEL_ADR, 11 * 64 * 4);
-	//offset parameter (32 here) seems to be # of tiles before start of this bg's tiles in that vram bank * 2
-	Map2VRAM(map_cloud, (void *)NBG2_MAP_ADR, 64, 64, 3, 32); 
+	Map2VRAM(map_cloud, (void *)NBG2_MAP_ADR, 64, 64, 2, 0); 
 	Pal2CRAM(pal_cloud, (void *)NBG2_COL_ADR, 256);
 	slScrPosNbg2(toFIXED(0), toFIXED(0));
+	slPriorityNbg2(4);
 	slColRateNbg2(0x05);
 	
-	//init road
+	//init face
 	slCharNbg3(COL_TYPE_256, CHAR_SIZE_2x2);
 	slPageNbg3((void *)NBG3_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
 	slPlaneNbg3(PL_SIZE_1x1);
 	slMapNbg3((void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR);
-	Cel2VRAM(cel_road, (void *)NBG3_CEL_ADR, 83 * 64 * 4);
-	Map2VRAM(map_road, (void *)NBG3_MAP_ADR, 64, 64, 3, 64); 
-	Pal2CRAM(pal_road, (void *)NBG3_COL_ADR, 256);
-	slScrPosNbg3(toFIXED(0), toFIXED(0));
+	Cel2VRAM(cel_face, (void *)NBG3_CEL_ADR, 16 * 64 * 4);
+	//offset parameter (64 here) seems to be # of tiles before start of this bg's tiles (256 byte) in that vram bank * 2
+	Map2VRAM(map_face, (void *)NBG3_MAP_ADR, 64, 64, 3, 64);
+	Pal2CRAM(pal_face, (void *)NBG3_COL_ADR, 256);
+	slScrPosNbg3(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
+	slPriorityNbg3(7);
+	slColorCalc(CC_RATE | CC_TOP | NBG3ON);
+	slColRateNbg3(0x00);
 	
-	slColorCalcOn(NBG1ON | NBG2ON);
-	slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON);
+	slColorCalcOn(NBG2ON | NBG3ON);
+	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON);
 	
 	// slScrAutoDisp(RBG0ON);
 }
@@ -255,8 +250,8 @@ static void updateBG(void)
 	bg2X += toFIXED(1.0);
 	bg2Y += toFIXED(1.0);
 	slScrPosNbg2(bg2X, bg2Y);
-	bg3X += toFIXED(0.5);
-	slScrPosNbg3(bg3X, bg3Y);
+	bg1X += toFIXED(0.5);
+	slScrPosNbg1(bg1X, bg1Y);
 }
 
 static void handlePlayerMovement(void)
@@ -278,7 +273,7 @@ static void handlePlayerMovement(void)
 			if (!handleSpriteCollision(screenX, screenY)) {
 				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
 					playerState = PLAYER_STATE_DEAD;
-					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON); //turn off player's bg layer
+					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON); //turn off player's bg layer
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = &PLAYER_ATTR;
@@ -673,7 +668,7 @@ void runLevel(void)
 			case GAME_STATE_FADEIN:
 				if (colorRatio < NORMAL_COL_RATIO) {
 					colorRatio++;
-					slColRateNbg1(colorRatio);
+					slColRateNbg3(colorRatio);
 					updateBG();
 					updateSprites();
 					dispSprites();
@@ -698,14 +693,14 @@ void runLevel(void)
 			case GAME_STATE_FADEOUT:
 				if (colorRatio > 0) {
 					colorRatio--;
-					slColRateNbg1(colorRatio);
+					slColRateNbg3(colorRatio);
 					updateBG();
 					dispSprites();
 					drawPlayField();
 					slSynch();
 				}
 				else {
-					slScrAutoDisp(NBG0ON | NBG2ON | NBG3ON);
+					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON);
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = &PLAYER_ATTR;

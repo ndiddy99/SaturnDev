@@ -14,7 +14,7 @@ static void initVDP2(void);
 static void createLut(void);
 static void render(int time);
 
-Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)/2];
+Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)*2];
 
 static void initVDP2(void) {
 	slTVOff();
