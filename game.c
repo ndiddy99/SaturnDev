@@ -13,28 +13,22 @@ Add level begin/end animations (done)
 #include	"sega_sys.h"
 
 #include "game.h"
-#include "sprattrs.c"
 #include "assetrefs.h"
+#include "framebuffer.h"
+#include "sprattrs.c"
 #include "spritelist.h"
-
-#define		NBG1_CEL_ADR		VDP2_VRAM_A0
-#define		NBG1_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
-#define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00200 )
-
-#define		NBG2_CEL_ADR		( VDP2_VRAM_B0 )
-#define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x2000)
-#define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00400 )
+#include "tilemap.h"
 
 #define		NBG3_CEL_ADR		( VDP2_VRAM_B1 + 0x2000)
 #define		NBG3_MAP_ADR		( VDP2_VRAM_A1)
 #define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00600 )
-
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
 #define PLAYER_STATE_FALLING 0
 #define PLAYER_STATE_RISING 1
 #define PLAYER_STATE_DEAD 2
 int playerState = PLAYER_STATE_FALLING;
+
 #define GAME_STATE_START 0
 #define GAME_STATE_FADEIN 1
 #define GAME_STATE_NORMAL 2 
@@ -42,6 +36,7 @@ int playerState = PLAYER_STATE_FALLING;
 #define GAME_STATE_COMPLETE 4
 #define GAME_STATE_CURSOR 5
 int gameState; //for main game state machine
+
 FIXED scale = toFIXED(0.25);
 FIXED scaleSpeed = toFIXED(0.0);
 
@@ -58,14 +53,15 @@ Uint8 dispFace; //1 if we're displaying the "player face" sprites, 0 otherwise
 
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
-FIXED bg1X = toFIXED(0.0);
-FIXED bg1Y = toFIXED(0.0);
-FIXED bg2X = toFIXED(0.0);
-FIXED bg2Y = toFIXED(0.0);
 #define SCREEN_BOUND_L toFIXED(-160)
 #define SCREEN_BOUND_R toFIXED(160)
 #define SCREEN_BOUND_T toFIXED(-112)
 #define SCREEN_BOUND_B toFIXED(112)
+
+Uint16 bgLayers;
+#define MODE_TILEMAP 0
+#define MODE_FRAMEBUFFER 1
+Uint8 bgMode = MODE_TILEMAP;
 
 
 //function prototypes
@@ -197,28 +193,18 @@ static void initVDP2(void)
 {
 	slColRAMMode(CRM16_2048);
 	slBack1ColSet((void *)BACK_COL_ADR , 0);
-		
-	//init road
-	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
-	slPageNbg1((void *)NBG1_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
-	slPlaneNbg1(PL_SIZE_1x1);
-	slMapNbg1((void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR , (void *)NBG1_MAP_ADR);
-	Cel2VRAM(cel_road, (void *)NBG1_CEL_ADR, 83 * 64 * 4);
-	Map2VRAM(map_road, (void *)NBG1_MAP_ADR, 64, 64, 1, 0); 
-	Pal2CRAM(pal_road, (void *)NBG1_COL_ADR, 256);
-	slScrPosNbg1(toFIXED(0), toFIXED(0));
 	
-	//init clouds
-	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);
-	slPageNbg2((void *)NBG2_CEL_ADR, 0 , PNB_1WORD|CN_10BIT);
-	slPlaneNbg2(PL_SIZE_1x1);
-	slMapNbg2((void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR , (void *)NBG2_MAP_ADR);
-	Cel2VRAM(cel_cloud, (void *)NBG2_CEL_ADR, 11 * 64 * 4);
-	Map2VRAM(map_cloud, (void *)NBG2_MAP_ADR, 64, 64, 2, 0); 
-	Pal2CRAM(pal_cloud, (void *)NBG2_COL_ADR, 256);
-	slScrPosNbg2(toFIXED(0), toFIXED(0));
-	slPriorityNbg2(4);
-	slColRateNbg2(0x05);
+	switch (bgMode) {
+		case MODE_TILEMAP:
+			initTilemap();
+			bgLayers = TILEMAP_BGS;
+		break;
+		case MODE_FRAMEBUFFER:
+			initFramebuffer();
+			bgLayers = FRAMEBUFFER_BGS;
+		break;
+		
+	}
 	
 	//init face
 	slCharNbg3(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -234,8 +220,8 @@ static void initVDP2(void)
 	slColorCalc(CC_RATE | CC_TOP | NBG3ON);
 	slColRateNbg3(0x00);
 	
-	slColorCalcOn(NBG2ON | NBG3ON);
-	slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON);
+	// slColorCalcOn(NBG2ON | NBG3ON);
+	slScrAutoDisp(bgLayers);
 	
 	// slScrAutoDisp(RBG0ON);
 }
@@ -246,12 +232,14 @@ static void updateBG(void)
 	if (gameState == GAME_STATE_NORMAL) {
 		handlePlayerMovement();
 	}
-	//cloud movement
-	bg2X += toFIXED(1.0);
-	bg2Y += toFIXED(1.0);
-	slScrPosNbg2(bg2X, bg2Y);
-	bg1X += toFIXED(0.5);
-	slScrPosNbg1(bg1X, bg1Y);
+	switch(bgMode) {
+		case MODE_TILEMAP:
+			updateTilemap();
+		break;
+		case MODE_FRAMEBUFFER:
+			runFramebuffer();
+		break;
+	}
 }
 
 static void handlePlayerMovement(void)
@@ -273,7 +261,8 @@ static void handlePlayerMovement(void)
 			if (!handleSpriteCollision(screenX, screenY)) {
 				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
 					playerState = PLAYER_STATE_DEAD;
-					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON); //turn off player's bg layer
+					bgLayers &= ~NBG3ON;
+					slScrAutoDisp(bgLayers); //turn off player's bg layer
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = &PLAYER_ATTR;
@@ -309,7 +298,8 @@ static void handlePlayerMovement(void)
 			screenX = toFIXED(0.0);
 			screenY = toFIXED(0.0);
 			playerState = PLAYER_STATE_FALLING;
-			slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
+			bgLayers |= NBG3ON;
+			slScrAutoDisp(bgLayers);
 			dispFace = 1;
 			deleteSprite(playerNode);
 		}
@@ -344,8 +334,8 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 				case TYPE_PUSH:
 					if (sprites[i].pos[X] - SPR_SIZE[TYPE_PUSH] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
 						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_PUSH] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_PUSH] > y) {
-							sprites[i].dx = (sprites[i].pos[X] - screenX) >> 1;
-							sprites[i].dy = (sprites[i].pos[Y] - screenY) >> 1;
+							sprites[i].dx = (sprites[i].pos[X] - screenX);
+							sprites[i].dy = (sprites[i].pos[Y] - screenY);
 							sprites[i].scratchpad = 1;
 							return 1;
 						}
@@ -660,7 +650,8 @@ void runLevel(void)
 				}
 				else {
 					deleteSprite(player);
-					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON | NBG3ON);
+					bgLayers |= NBG3ON;
+					slScrAutoDisp(bgLayers);
 					dispFace = 1;
 					gameState = GAME_STATE_FADEIN;
 				}
@@ -700,7 +691,8 @@ void runLevel(void)
 					slSynch();
 				}
 				else {
-					slScrAutoDisp(NBG0ON | NBG1ON | NBG2ON);
+					bgLayers &= ~NBG3ON;
+					slScrAutoDisp(bgLayers);
 					dispFace = 0;
 					SPRITE_INFO tmp = defaultSprite;
 					tmp.attr = &PLAYER_ATTR;

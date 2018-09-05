@@ -16,6 +16,10 @@
 #include "assets\cloud.map"
 #include "assets\cloud.pal"
 
+#include "assets\gradient.cel"
+#include "assets\gradient.map"
+#include "assets\gradient.pal"
+
 #include "assets\checkerboard.c"
 // #include "assets\YAMA.CEL"
 // #include "assets\YAMA.MAP"

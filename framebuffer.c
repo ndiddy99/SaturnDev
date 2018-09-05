@@ -7,28 +7,29 @@
 #define videoMem ((Uint16*)VDP2_VRAM_A0)
 #define TEXTURE_WIDTH 128
 #define TEXTURE_HEIGHT 128
-#define SCREEN_WIDTH 160
-#define SCREEN_HEIGHT 112
+#define SCREEN_WIDTH 80
+#define SCREEN_HEIGHT 56
 
 static void initVDP2(void);
-static void createLut(void);
 static void render(int time);
 
 Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)*2];
+Uint16 screenBuf[SCREEN_WIDTH*SCREEN_HEIGHT];
 
 static void initVDP2(void) {
-	slTVOff();
+	// slTVOff();
 	slBitMapNbg1(COL_TYPE_32768, BM_512x256, (void *)VDP2_VRAM_A0);
 	slScrPosNbg1(toFIXED(0.0), toFIXED(0.0));
 	slZoomModeNbg1(ZOOM_1);
-	slZoomNbg1(toFIXED(0.5), toFIXED(0.5));  
+	slZoomNbg1(toFIXED(0.25), toFIXED(0.25));  
 	slScrAutoDisp(NBG0ON | NBG1ON);
 }
 
 //code from http://www.iquilezles.org/www/articles/deform/deform.htm
-static void createLut(void) {
+void initFramebuffer(void) {
 	int i,j;
 	int k = 0;
+	initVDP2();
 	for (j=0; j < SCREEN_HEIGHT; j++) {
 		for (i=0; i < SCREEN_WIDTH; i++) {
 			FIXED x = toFIXED(-1) + slDivFX(toFIXED(SCREEN_WIDTH), slMulFX(toFIXED(2), (i << 16)));
@@ -53,23 +54,17 @@ static void render(int time) {
 			int u = lut[(offset << 1)+0] + time;
 			int v = lut[(offset << 1)+1] + time;
 			videoMem[512*j+i]=checkerboard[128*(v&127)+(u&127)];
+			// screenBuf[SCREEN_WIDTH*j + i] = checkerboard[128*(v&127)+(u&127)];
 		}
 	}
+	// for (i = 0; i < TEXTURE_HEIGHT; i++) {
+		// slDMACopy(((void *)checkerboard) + (i * TEXTURE_WIDTH * 2), ((void *)VDP2_VRAM_A0) + (512 * i * 2), TEXTURE_WIDTH*2);
+		// slDMAWait();
+	// }
+	// slDMACopy((void *)checkerboard, (void *)VDP2_VRAM_A0, 128*2);
 }
 
 void runFramebuffer(void) {
-	int i = 0;
-	initVDP2();
-	createLut();
-	// for (y = 0; y < SCREEN_HEIGHT; y++) {
-		// for (x = 0; x < SCREEN_WIDTH; x++) {
-			// videoMem[(y*512) + x] = bluerock[TEXTURE_HEIGHT*(y&127) + (x&127)];
-		// }
-	// }
-	slTVOn();
-	while(1) {
-		render(i+=3);
-		slPrintHex(i, slLocate(0,0));
-		slSynch();
-	}
+	static int i = 0;
+	render(i++);
 }

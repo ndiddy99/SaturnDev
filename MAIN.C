@@ -24,7 +24,7 @@ FIXED spritepos2[] = {
 	toFIXED(130), toFIXED(130),
 };
 void ss_main(void) { //entry point for program
-	slInitSystem(TV_320x224,tex_sprites,1);
+	slInitSystem(TV_320x224,tex_sprites, 1);
 	while (1) {
 		loadLevel(map_map1);
 		loadSpritePos(spritepos1, sizeof(spritepos1)/sizeof(FIXED));
@@ -32,7 +32,7 @@ void ss_main(void) { //entry point for program
 		loadLevel(map_map2);
 		loadSpritePos(spritepos2, sizeof(spritepos2)/sizeof(FIXED));
 		runLevel();
-		// runFramebuffer();
+		runFramebuffer();
 	}
 }
 
