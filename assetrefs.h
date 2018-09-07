@@ -25,7 +25,7 @@ extern Uint16 pal_gradient[];
 extern Uint16 map_gradient[];
 extern Uint8 cel_gradient[];
 
-extern Uint16 checkerboard[];
+// extern Uint16 checkerboard[];
 // extern Uint16 yama_map[];
 // extern Uint16 yama_pal[];
 // extern Uint8 yama_cel[];

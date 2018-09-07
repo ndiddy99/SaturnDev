@@ -1,5 +1,5 @@
 # source_program
-SRCS = main.c assets.c game.c framebuffer.c scrollfunctions.c spritelist.c tilemap.c
+SRCS = main.c assets.c game.c linescroll.c scrollfunctions.c spritelist.c tilemap.c
 
 SYSOBJS = $(CMNDIR)/cinit.o $(SGLLDR)/sglarea.o
 OBJS = $(SRCS:.c=.o)

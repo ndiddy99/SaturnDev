@@ -20,7 +20,7 @@
 #include "assets\gradient.map"
 #include "assets\gradient.pal"
 
-#include "assets\checkerboard.c"
+// #include "assets\checkerboard.c"
 // #include "assets\YAMA.CEL"
 // #include "assets\YAMA.MAP"
 // #include "assets\YAMA.PAL"

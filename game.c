@@ -4,7 +4,7 @@ Make enemies killable by crushing and falling (done)
 Draw block textures that more closely match Bound High's (done for now)
 Make a level progression system (I'm thinking making a level function that is called for each level from the main function) (done)
 Add score/lives
-Animate fake Chalvo
+Animate fake Chalvo (done)
 Add level begin/end animations (done)
 
 */
@@ -14,7 +14,7 @@ Add level begin/end animations (done)
 
 #include "game.h"
 #include "assetrefs.h"
-#include "framebuffer.h"
+#include "linescroll.h"
 #include "sprattrs.c"
 #include "spritelist.h"
 #include "tilemap.h"
@@ -60,8 +60,8 @@ FIXED screenY = toFIXED(0.0);
 
 Uint16 bgLayers;
 #define MODE_TILEMAP 0
-#define MODE_FRAMEBUFFER 1
-Uint8 bgMode = MODE_TILEMAP;
+#define MODE_LINESCROLL 1
+Uint8 bgMode = MODE_LINESCROLL;
 
 
 //function prototypes
@@ -199,11 +199,9 @@ static void initVDP2(void)
 			initTilemap();
 			bgLayers = TILEMAP_BGS;
 		break;
-		case MODE_FRAMEBUFFER:
-			initFramebuffer();
-			bgLayers = FRAMEBUFFER_BGS;
-		break;
-		
+		case MODE_LINESCROLL:
+			initLinescroll();
+			bgLayers = LINESCROLL_BGS;
 	}
 	
 	//init face
@@ -236,8 +234,8 @@ static void updateBG(void)
 		case MODE_TILEMAP:
 			updateTilemap();
 		break;
-		case MODE_FRAMEBUFFER:
-			runFramebuffer();
+		case MODE_LINESCROLL:
+			updateLinescroll();
 		break;
 	}
 }

@@ -1,5 +1,4 @@
 #include "sgl.h"
-#include "framebuffer.h"
 #include "game.h"
 #include "assetrefs.h"
 #include "spritepos1.h"
@@ -32,7 +31,6 @@ void ss_main(void) { //entry point for program
 		loadLevel(map_map2);
 		loadSpritePos(spritepos2, sizeof(spritepos2)/sizeof(FIXED));
 		runLevel();
-		runFramebuffer();
 	}
 }
 

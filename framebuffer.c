@@ -13,8 +13,8 @@
 static void initVDP2(void);
 static void render(int time);
 
-Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)*2];
-Uint16 screenBuf[SCREEN_WIDTH*SCREEN_HEIGHT];
+static Uint8 lut[(SCREEN_WIDTH*SCREEN_HEIGHT)*2];
+static Uint16 screenBuf[SCREEN_WIDTH*SCREEN_HEIGHT];
 
 static void initVDP2(void) {
 	// slTVOff();

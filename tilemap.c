@@ -5,17 +5,17 @@
 #include "assetrefs.h"
 
 #define		NBG1_CEL_ADR		VDP2_VRAM_A0
-#define		NBG1_MAP_ADR		( VDP2_VRAM_A0 + 0x10000 )
+#define		NBG1_MAP_ADR		( VDP2_VRAM_A1 + 0x2000 )
 #define		NBG1_COL_ADR		( VDP2_COLRAM + 0x00200 )
 
 #define		NBG2_CEL_ADR		( VDP2_VRAM_B0 )
 #define		NBG2_MAP_ADR		( VDP2_VRAM_A1 + 0x2000)
 #define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00400 )
 
-FIXED bg1X = toFIXED(0.0);
-FIXED bg1Y = toFIXED(0.0);
-FIXED bg2X = toFIXED(0.0);
-FIXED bg2Y = toFIXED(0.0);
+static FIXED bg1X = toFIXED(0.0);
+static FIXED bg1Y = toFIXED(0.0);
+static FIXED bg2X = toFIXED(0.0);
+static FIXED bg2Y = toFIXED(0.0);
 
 void initTilemap(void) {
 	//init road
