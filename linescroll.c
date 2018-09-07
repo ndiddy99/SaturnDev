@@ -15,6 +15,9 @@
 #define		NBG2_MAP_ADR		( VDP2_VRAM_A0 + 0x10000)
 #define		NBG2_COL_ADR		( VDP2_COLRAM + 0x00400 )
 
+#define colorRam ((Uint16*)NBG1_COL_ADR)
+#define COLOR(r,g,b) ((Uint16)((b << 10) | (g << 5) | r))
+
 static FIXED bg1X = toFIXED(0.0);
 static FIXED bg1Y = toFIXED(0.0);
 static FIXED bg2X = toFIXED(0.0);
@@ -24,7 +27,10 @@ void initLinescroll(void) {
 	int i;
 	
 	for (i = 0; i < 224; i++)
-		lineScrTable[i] = slSin(DEGtoANG(i << 2)) << 7;
+		lineScrTable[i] = slSin(DEGtoANG(i << 2)) << 6;
+	
+	for (i = 0; i < 16; i++)
+		colorRam[i] = COLOR(i, 0, i);
 	
 	//init road
 	slCharNbg1(COL_TYPE_256, CHAR_SIZE_2x2);
@@ -36,7 +42,7 @@ void initLinescroll(void) {
 	
 	Cel2VRAM(cel_gradient, (void *)NBG1_CEL_ADR, 4 * 64 * 4);
 	Map2VRAM(map_gradient, (void *)NBG1_MAP_ADR, 64, 64, 1, 0); 
-	Pal2CRAM(pal_gradient, (void *)NBG1_COL_ADR, 256);
+	// Pal2CRAM(pal_gradient, (void *)NBG1_COL_ADR, 256);
 	slScrPosNbg1(toFIXED(0), toFIXED(0));
 	
 	// //init clouds
@@ -51,8 +57,25 @@ void initLinescroll(void) {
 }
 
 void updateLinescroll(void) {
+	static int count = 0;
+	
+	int i;
+	if (count == 5) {
+		for (i = 15; i >= 0; i--) {
+			if (i == 0)
+				colorRam[i] = colorRam[15];
+			else
+				colorRam[i] = colorRam[i - 1];
+		}
+	count = 0;
+	}
+	else {
+		count++;
+	}
+	
 	//road movement
 	bg1Y += toFIXED(0.5);
+	bg1X += toFIXED(1);
 	slScrPosNbg1(bg1X, bg1Y);
 	// //cloud movement
 	// bg2X += toFIXED(1.0);
