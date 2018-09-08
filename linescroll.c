@@ -26,10 +26,10 @@ static FIXED bg2Y = toFIXED(0.0);
 void initLinescroll(void) {
 	int i;
 	
-	for (i = 0; i < 224; i++)
+	for (i = 0; i < 224; i++) //write scroll offset table
 		lineScrTable[i] = slSin(DEGtoANG(i << 2)) << 6;
 	
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < 16; i++) //write color gradient
 		colorRam[i] = COLOR(i, 0, i);
 	
 	//init road
@@ -60,7 +60,7 @@ void updateLinescroll(void) {
 	static int count = 0;
 	
 	int i;
-	if (count == 5) {
+	if (count == 2) {
 		for (i = 15; i >= 0; i--) {
 			if (i == 0)
 				colorRam[i] = colorRam[15];
@@ -72,13 +72,7 @@ void updateLinescroll(void) {
 	else {
 		count++;
 	}
-	
-	//road movement
+	bg1X -= toFIXED(2);	
 	bg1Y += toFIXED(0.5);
-	bg1X += toFIXED(1);
 	slScrPosNbg1(bg1X, bg1Y);
-	// //cloud movement
-	// bg2X += toFIXED(1.0);
-	// bg2Y += toFIXED(1.0);
-	// slScrPosNbg2(bg2X, bg2Y);
 }

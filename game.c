@@ -603,7 +603,7 @@ void loadLevel(Uint16 map[])
 	}
 }
 
-void loadSpritePos(FIXED posArr[], int size)
+void loadSpritePos(Uint16 posArr[], int size)
 {
 	int i;
 	SPRITE_INFO tmp;
@@ -612,9 +612,12 @@ void loadSpritePos(FIXED posArr[], int size)
 	tmp.attr = &PUSH_ATTR;
 	tmp.type = TYPE_PUSH;
 	for (i = 0; i < size; i++) {
-		tmp.pos[X] = posArr[i];
+		tmp.pos[X] = (posArr[i] << 16);
 		i++;
-		tmp.pos[Y] = posArr[i];
+		tmp.pos[Y] = (posArr[i] << 16);
+		i++,
+		tmp.type = posArr[i];
+		tmp.attr = SPR_ATTRS[posArr[i]];
 		addSprite(tmp);
 	}
 }
