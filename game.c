@@ -61,7 +61,7 @@ FIXED screenY = toFIXED(0.0);
 Uint16 bgLayers;
 #define MODE_TILEMAP 0
 #define MODE_LINESCROLL 1
-Uint8 bgMode = MODE_LINESCROLL;
+Uint8 bgMode = MODE_TILEMAP;
 
 
 //function prototypes
@@ -202,6 +202,7 @@ static void initVDP2(void)
 		case MODE_LINESCROLL:
 			initLinescroll();
 			bgLayers = LINESCROLL_BGS;
+		break;
 	}
 	
 	//init face
@@ -590,7 +591,7 @@ static void initGame(void)
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
 	slTVOff();
-	set_sprite(pic_sprites, 23, tex_sprites);
+	set_sprite(pic_sprites, 40, tex_sprites);
 	initVDP2();
 	slTVOn();
 }
@@ -603,14 +604,14 @@ void loadLevel(Uint16 map[])
 	}
 }
 
+
+
 void loadSpritePos(Uint16 posArr[], int size)
 {
 	int i;
 	SPRITE_INFO tmp;
 	initSprites();
 	tmp = defaultSprite;
-	tmp.attr = &PUSH_ATTR;
-	tmp.type = TYPE_PUSH;
 	for (i = 0; i < size; i++) {
 		tmp.pos[X] = (posArr[i] << 16);
 		i++;
@@ -618,6 +619,37 @@ void loadSpritePos(Uint16 posArr[], int size)
 		i++,
 		tmp.type = posArr[i];
 		tmp.attr = SPR_ATTRS[posArr[i]];
+		addSprite(tmp);
+	}
+}
+
+static int getNumDigits(Uint16 num)
+{
+	if (num < 10)
+		return 1;
+	else if (num < 100)
+		return 2;
+	else if (num < 1000)
+		return 3;
+	else if (num < 10000)
+		return 4;
+	else
+		return 5;	
+}
+
+#define NUMBER_WIDTH (24 << 16) //width in pixels of each number sprite
+static void dispNum(Uint16 number, FIXED x, FIXED y)
+{
+	int i;
+	int digits = getNumDigits(number);
+	SPRITE_INFO tmp = defaultSprite;
+	tmp.type = TYPE_FACE;
+	tmp.pos[X] = x;
+	tmp.pos[Y] = y;
+	while (digits--) {
+		tmp.attr = DIGITS[number % 10];
+		number /= 10;
+		tmp.pos[X] -= NUMBER_WIDTH;
 		addSprite(tmp);
 	}
 }
@@ -639,6 +671,7 @@ void runLevel(void)
 	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSprite(tmp);
+	dispNum(42069, toFIXED(0), toFIXED(0));
 	while (1) {
 		switch (gameState) {
 			case GAME_STATE_START:
