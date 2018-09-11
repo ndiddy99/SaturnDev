@@ -79,6 +79,9 @@ static void updateSprites(void);
 static Uint8 checkShotCollision(int index);
 static void dispSprites(void);
 static void drawPlayField(void);
+static int getNumDigits(Uint16 num);
+static void dispNum(Uint16 number, FIXED x, FIXED y);
+
 
 static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 {
@@ -326,6 +329,7 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
 							addSprite(tmp);
 							deleteSprite(i);
+							dispNum(100, x, y);
 							return 1;
 						}
 					}
@@ -472,7 +476,14 @@ static void updateSprites(void)
 					abs(sprites[i].pos[Y] - screenY) > SCREEN_BOUND_B) {
 						deleteSprite(i);
 					}
-				break;
+			break;
+			#define DIGIT_DISP_FRAMES 60
+			case TYPE_DIGIT:
+				sprites[i].pos[Y] -= toFIXED(0.5);
+				sprites[i].scratchpad++;
+				if (sprites[i].scratchpad > DIGIT_DISP_FRAMES)
+					deleteSprite(i);
+			break;
 			}
 		}
 	}
@@ -637,7 +648,7 @@ static void dispNum(Uint16 number, FIXED x, FIXED y)
 	int i;
 	int digits = getNumDigits(number);
 	SPRITE_INFO tmp = defaultSprite;
-	tmp.type = TYPE_FACE;
+	tmp.type = TYPE_DIGIT;
 	tmp.pos[X] = x;
 	tmp.pos[Y] = y;
 	while (digits--) {
@@ -665,7 +676,7 @@ void runLevel(void)
 	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSprite(tmp);
-	dispNum(42069, toFIXED(15), toFIXED(0));
+	// dispNum(42069, toFIXED(15), toFIXED(0));
 	while (1) {
 		switch (gameState) {
 			case GAME_STATE_START:
