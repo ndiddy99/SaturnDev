@@ -16,7 +16,7 @@
 #include "assets\cloud.map"
 #include "assets\cloud.pal"
 
-#include "assets\gradient.cel"
+#include "assets\gradient.cel" 
 #include "assets\gradient.map"
 #include "assets\gradient.pal"
 

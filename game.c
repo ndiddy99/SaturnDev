@@ -533,12 +533,6 @@ static void dispSprites(void)
 	for (i = 0; i < MAX_SPRITES; i++) {
 		if (sprites[i].state != SPRITE_STATE_NODISP && (dispFace || sprites[i].type != TYPE_FACE)) {
 			slPrintHex(i, slLocate(0,6));
-			// while (!dispFace && sprites[i].type == TYPE_FACE) {
-				// if (i >= MAX_SPRITES)
-					// break;
-				// else
-					// i++;
-			// }
 			if (sprites[i].type == TYPE_FACE) {
 				spritePos[X] = sprites[i].pos[X];
 				spritePos[Y] = sprites[i].pos[Y];
@@ -637,7 +631,7 @@ static int getNumDigits(Uint16 num)
 		return 5;	
 }
 
-#define NUMBER_WIDTH (24 << 16) //width in pixels of each number sprite
+#define NUMBER_WIDTH (9 << 16) //width in pixels of each number sprite
 static void dispNum(Uint16 number, FIXED x, FIXED y)
 {
 	int i;
@@ -649,8 +643,8 @@ static void dispNum(Uint16 number, FIXED x, FIXED y)
 	while (digits--) {
 		tmp.attr = DIGITS[number % 10];
 		number /= 10;
-		tmp.pos[X] -= NUMBER_WIDTH;
 		addSprite(tmp);
+		tmp.pos[X] -= NUMBER_WIDTH;
 	}
 }
 
@@ -671,7 +665,7 @@ void runLevel(void)
 	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSprite(tmp);
-	dispNum(42069, toFIXED(0), toFIXED(0));
+	dispNum(42069, toFIXED(15), toFIXED(0));
 	while (1) {
 		switch (gameState) {
 			case GAME_STATE_START:
