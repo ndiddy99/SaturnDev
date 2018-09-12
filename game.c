@@ -73,14 +73,15 @@ static void updateBG(void);
 static void handlePlayerMovement(void);
 static Uint8 handleSpriteCollision(FIXED x, FIXED y);
 static Uint8 handleGroundCollision(FIXED x, FIXED y);
+static void handleSpriteRemoval(int index, int score);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy);
 static void updateSprites(void);
 static Uint8 checkShotCollision(int index);
 static void dispSprites(void);
 static void drawPlayField(void);
-static int getNumDigits(Uint16 num);
-static void dispNum(Uint16 number, FIXED x, FIXED y);
+static int getNumDigits(int num);
+static void dispNum(int number, FIXED x, FIXED y);
 
 
 static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
@@ -170,7 +171,7 @@ static void initSprites(void)
 	//add eye sprites
 	SPRITE_INFO info = defaultSprite;
 	info.attr = &SCLERA_ATTR;
-	info.type = TYPE_FACE;
+	info.type = TYPE_STATIC;
 	info.pos[X] = toFIXED(-12);
 	info.pos[Y] = toFIXED(-8);
 	info.pos[Z] = toFIXED(160);
@@ -328,8 +329,7 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 							tmp.pos[Y] = y;
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
 							addSprite(tmp);
-							deleteSprite(i);
-							dispNum(100, x, y);
+							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE]);
 							return 1;
 						}
 					}
@@ -347,6 +347,11 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 		}
 	}
 	return 0;
+}
+
+static void handleSpriteRemoval(int index, int score) {
+	dispNum(score, sprites[index].pos[X], sprites[index].pos[Y]);
+	deleteSprite(index);
 }
 
 static Uint8 handleGroundCollision(FIXED x, FIXED y) {
@@ -416,7 +421,7 @@ static void updateSprites(void)
 					if (sprites[i].pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
 						sprites[i].pos[S] -= toFIXED(0.02);
 					else {
-						deleteSprite(i);
+						handleSpriteRemoval(i, POINTS[TYPE_CIRCLE]);
 					}
 				}
 			break;
@@ -463,7 +468,7 @@ static void updateSprites(void)
 					if (sprites[i].pos[S] > toFIXED(0.05)) //scale down sprite until it disappears
 						sprites[i].pos[S] -= toFIXED(0.02);
 					else {
-						deleteSprite(i);
+						handleSpriteRemoval(i, POINTS[TYPE_PUSH]);
 					}
 				}				
 			break;
@@ -523,7 +528,8 @@ static Uint8 checkShotCollision(int index)
 							tmp.pos[X] = sprites[i].pos[X];
 							tmp.pos[Y] = sprites[i].pos[Y];
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
-							deleteSprite(i);
+							tmp.scratchpad = sprites[i].scratchpad + 1;
+							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
 							addSprite(tmp);
 							return 1;
 						}
@@ -542,9 +548,9 @@ static void dispSprites(void)
 	int i;
 	FIXED spritePos[XYZS];
 	for (i = 0; i < MAX_SPRITES; i++) {
-		if (sprites[i].state != SPRITE_STATE_NODISP && (dispFace || sprites[i].type != TYPE_FACE)) {
+		if (sprites[i].state != SPRITE_STATE_NODISP && (dispFace || sprites[i].type != TYPE_STATIC)) {
 			slPrintHex(i, slLocate(0,6));
-			if (sprites[i].type == TYPE_FACE) {
+			if (sprites[i].type == TYPE_STATIC) {
 				spritePos[X] = sprites[i].pos[X];
 				spritePos[Y] = sprites[i].pos[Y];
 				spritePos[Z] = sprites[i].pos[Z];
@@ -556,7 +562,7 @@ static void dispSprites(void)
 			}
 			if (sprites[i].state == SPRITE_STATE_FALL)
 				spritePos[S] = slMulFX(sprites[i].pos[S], scale);
-			else if (sprites[i].type == TYPE_NULL || sprites[i].type == TYPE_FACE)
+			else if (sprites[i].type == TYPE_NULL || sprites[i].type == TYPE_STATIC)
 				spritePos[S] = sprites[i].pos[S];
 			else
 				spritePos[S] = scale;
@@ -628,7 +634,7 @@ void loadSpritePos(Uint16 posArr[], int size)
 	}
 }
 
-static int getNumDigits(Uint16 num)
+static int getNumDigits(int num)
 {
 	if (num < 10)
 		return 1;
@@ -638,12 +644,22 @@ static int getNumDigits(Uint16 num)
 		return 3;
 	else if (num < 10000)
 		return 4;
+	else if (num < 100000)
+		return 5;
+	else if (num < 1000000)
+		return 6;
+	else if (num < 10000000)
+		return 7;
+	else if (num < 100000000)
+		return 8;
+	else if (num < 1000000000)
+		return 9;
 	else
-		return 5;	
+		return 10;
 }
 
 #define NUMBER_WIDTH (9 << 16) //width in pixels of each number sprite
-static void dispNum(Uint16 number, FIXED x, FIXED y)
+static void dispNum(int number, FIXED x, FIXED y)
 {
 	int i;
 	int digits = getNumDigits(number);

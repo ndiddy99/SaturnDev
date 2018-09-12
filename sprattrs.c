@@ -24,6 +24,7 @@ SPR_ATTR NINE_ATTR  = SPR_ATTRIBUTE(39,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,
 //needs to be in the same order as sprite type defines in spritelist.h
 FIXED SPR_SIZE[] = {toFIXED(0), toFIXED(16), toFIXED(8), toFIXED(0), toFIXED(16)}; //collision radius
 SPR_ATTR* SPR_ATTRS[] = {NULL, &CIRCLE_ATTR, &SHOT_ATTR, NULL, &PUSH_ATTR};
+int POINTS[] = {0, 100, 0, 0, 150}; //points per thing
 
 SPR_ATTR* DIGITS[] = {&ZERO_ATTR, &ONE_ATTR, &TWO_ATTR, &THREE_ATTR, &FOUR_ATTR, &FIVE_ATTR, &SIX_ATTR, &SEVEN_ATTR, &EIGHT_ATTR, &NINE_ATTR};
 

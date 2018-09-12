@@ -14,7 +14,7 @@ typedef struct SpriteInfo {
 #define TYPE_NULL 0
 #define TYPE_CIRCLE 1
 #define TYPE_SHOT 2
-#define TYPE_FACE 3 //what makes up char's face
+#define TYPE_STATIC 3 //what makes up char's face
 #define TYPE_PUSH 4
 #define TYPE_DIGIT 30
 
