@@ -528,7 +528,7 @@ static Uint8 checkShotCollision(int index)
 							tmp.pos[X] = sprites[i].pos[X];
 							tmp.pos[Y] = sprites[i].pos[Y];
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
-							tmp.scratchpad = sprites[i].scratchpad + 1;
+							tmp.scratchpad = sprites[index].scratchpad + 1;
 							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
 							addSprite(tmp);
 							return 1;
