@@ -1,11 +1,8 @@
 /*
 To-Dos:
-Make enemies killable by crushing and falling (done)
-Draw block textures that more closely match Bound High's (done for now)
-Make a level progression system (I'm thinking making a level function that is called for each level from the main function) (done)
 Add score/lives
-Animate fake Chalvo (done)
-Add level begin/end animations (done)
+Have bullets push the PUSH enemies
+Have actual angles for shot fire instead of being 8 directional, have 3 bullets 15 degrees apart instead of just one bullet
 
 */
 
@@ -168,6 +165,7 @@ static void initSprites(void)
 	defaultSprite.dy = toFIXED(0.0);
 	defaultSprite.state = SPRITE_STATE_NORM;
 	defaultSprite.scratchpad = 0;
+	
 	//add eye sprites
 	SPRITE_INFO info = defaultSprite;
 	info.attr = &SCLERA_ATTR;
@@ -494,20 +492,10 @@ static void updateSprites(void)
 	}
 }
 
-static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy) {
-	if (abs(spriteX - playerX) < toFIXED(2))
-		*dx = toFIXED(0);
-	else if (spriteX < playerX)
-		*dx = toFIXED(-2);
-	else
-		*dx = toFIXED(2);
-	
-	if (abs(spriteY - playerY) < toFIXED(2) && *dx != toFIXED(0))
-		*dy = toFIXED(0);
-	else if (spriteY < playerY)
-		*dy = toFIXED(-2);
-	else
-		*dy = toFIXED(2);	
+static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy) {	
+	ANGLE ang = slAtan(spriteX - playerX, spriteY - playerY);
+	*dx = slMulFX(slCos(ang), toFIXED(2));
+	*dy = slMulFX(slSin(ang), toFIXED(2));
 }
 
 static Uint8 checkShotCollision(int index) 
@@ -530,7 +518,7 @@ static Uint8 checkShotCollision(int index)
 							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
 							tmp.scratchpad = sprites[index].scratchpad + 1;
 							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
-							addSprite(tmp);
+							addSprite(tmp);							
 							return 1;
 						}
 					}
