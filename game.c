@@ -72,7 +72,7 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y);
 static Uint8 handleGroundCollision(FIXED x, FIXED y);
 static void handleSpriteRemoval(int index, int score);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
-static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy);
+static FIXED* setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY);
 static void updateSprites(void);
 static Uint8 checkShotCollision(int index);
 static void dispSprites(void);
@@ -321,12 +321,21 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 					if (sprites[i].pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
 						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
 							SPRITE_INFO tmp = defaultSprite;
+							FIXED* pos;
 							tmp.attr = &SHOT_ATTR;
 							tmp.type = TYPE_SHOT;
 							tmp.pos[X] = x;
 							tmp.pos[Y] = y;
-							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
-							addSprite(tmp);
+							pos = setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y]);
+							tmp.dx = pos[0];
+							tmp.dy = pos[1];
+							addSprite(tmp);		
+							tmp.dx = pos[2];
+							tmp.dy = pos[3];
+							addSprite(tmp);	
+							tmp.dx = pos[4];
+							tmp.dy = pos[5];
+							addSprite(tmp);	
 							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE]);
 							return 1;
 						}
@@ -492,10 +501,19 @@ static void updateSprites(void)
 	}
 }
 
-static void setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY, FIXED* dx, FIXED* dy) {	
-	ANGLE ang = slAtan(spriteX - playerX, spriteY - playerY);
-	*dx = slMulFX(slCos(ang), toFIXED(2));
-	*dy = slMulFX(slSin(ang), toFIXED(2));
+static FIXED* setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY) {	
+	ANGLE ang1, ang2, ang3;
+	static FIXED pos[6];
+	ang1 = slAtan(spriteX - playerX, spriteY - playerY);
+	ang2 = ang1 + DEGtoANG(15);
+	ang3 = ang1 - DEGtoANG(15);
+	pos[0] = slMulFX(slCos(ang1), toFIXED(2));
+	pos[1] = slMulFX(slSin(ang1), toFIXED(2));
+	pos[2] = slMulFX(slCos(ang2), toFIXED(2));
+	pos[3] = slMulFX(slSin(ang2), toFIXED(2));
+	pos[4] = slMulFX(slCos(ang3), toFIXED(2));
+	pos[5] = slMulFX(slSin(ang3), toFIXED(2));
+	return pos;
 }
 
 static Uint8 checkShotCollision(int index) 
@@ -511,14 +529,23 @@ static Uint8 checkShotCollision(int index)
 					if (sprites[i].pos[X] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < x && sprites[i].pos[X] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > x) {
 						if (sprites[i].pos[Y] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < y && sprites[i].pos[Y] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > y) {
 							SPRITE_INFO tmp = defaultSprite;
+							FIXED* pos;
 							tmp.attr = &SHOT_ATTR;
 							tmp.type = TYPE_SHOT;
 							tmp.pos[X] = sprites[i].pos[X];
 							tmp.pos[Y] = sprites[i].pos[Y];
-							setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y], &tmp.dx, &tmp.dy);
+							pos = setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y]);
 							tmp.scratchpad = sprites[index].scratchpad + 1;
 							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
-							addSprite(tmp);							
+							tmp.dx = pos[0];
+							tmp.dy = pos[1];
+							addSprite(tmp);		
+							tmp.dx = pos[2];
+							tmp.dy = pos[3];
+							addSprite(tmp);	
+							tmp.dx = pos[4];
+							tmp.dy = pos[5];
+							addSprite(tmp);								
 							return 1;
 						}
 					}
