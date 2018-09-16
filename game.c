@@ -1,8 +1,6 @@
 /*
 To-Dos:
 Add score/lives
-Have bullets push the PUSH enemies
-Have actual angles for shot fire instead of being 8 directional, have 3 bullets 15 degrees apart instead of just one bullet
 
 */
 
@@ -16,8 +14,8 @@ Have actual angles for shot fire instead of being 8 directional, have 3 bullets 
 #include "spritelist.h"
 #include "tilemap.h"
 
-#define		NBG3_CEL_ADR		( VDP2_VRAM_B1 + 0x2000)
-#define		NBG3_MAP_ADR		( VDP2_VRAM_A1)
+#define		NBG3_CEL_ADR		( VDP2_VRAM_A1 )
+#define		NBG3_MAP_ADR		( VDP2_VRAM_B1 + 0x2000)
 #define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00600 )
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
@@ -70,6 +68,7 @@ static void updateBG(void);
 static void handlePlayerMovement(void);
 static Uint8 handleSpriteCollision(FIXED x, FIXED y);
 static Uint8 handleGroundCollision(FIXED x, FIXED y);
+static Uint8 spriteCollisionBehavior(int index, int collidingIndex);
 static void handleSpriteRemoval(int index, int score);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 static FIXED* setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY);
@@ -214,7 +213,7 @@ static void initVDP2(void)
 	slMapNbg3((void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR);
 	Cel2VRAM(cel_face, (void *)NBG3_CEL_ADR, 16 * 64 * 4);
 	//offset parameter (64 here) seems to be # of tiles before start of this bg's tiles (256 byte) in that vram bank * 2
-	Map2VRAM(map_face, (void *)NBG3_MAP_ADR, 64, 64, 3, 64);
+	Map2VRAM(map_face, (void *)NBG3_MAP_ADR, 64, 64, 3, 0);
 	Pal2CRAM(pal_face, (void *)NBG3_COL_ADR, 256);
 	slScrPosNbg3(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
 	slPriorityNbg3(7);
@@ -316,42 +315,51 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 	int i;
 	for (i = 0; i < MAX_SPRITES; i++) {
 		if (sprites[i].state != SPRITE_STATE_NODISP) {
-			switch (sprites[i].type) {
-				case TYPE_CIRCLE:
-					if (sprites[i].pos[X] - SPR_SIZE[TYPE_CIRCLE] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
-						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_CIRCLE] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_CIRCLE] > y) {
-							SPRITE_INFO tmp = defaultSprite;
-							FIXED* pos;
-							tmp.attr = &SHOT_ATTR;
-							tmp.type = TYPE_SHOT;
-							tmp.pos[X] = x;
-							tmp.pos[Y] = y;
-							pos = setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y]);
-							tmp.dx = pos[0];
-							tmp.dy = pos[1];
-							addSprite(tmp);		
-							tmp.dx = pos[2];
-							tmp.dy = pos[3];
-							addSprite(tmp);	
-							tmp.dx = pos[4];
-							tmp.dy = pos[5];
-							addSprite(tmp);	
-							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE]);
-							return 1;
-						}
-					}
-				break;
-				case TYPE_PUSH:
-					if (sprites[i].pos[X] - SPR_SIZE[TYPE_PUSH] < x && sprites[i].pos[X] + SPR_SIZE[TYPE_CIRCLE] > x) {
-						if (sprites[i].pos[Y] - SPR_SIZE[TYPE_PUSH] < y && sprites[i].pos[Y] + SPR_SIZE[TYPE_PUSH] > y) {
-							sprites[i].dx = (sprites[i].pos[X] - screenX);
-							sprites[i].dy = (sprites[i].pos[Y] - screenY);
-							sprites[i].scratchpad = 1;
-							return 1;
-						}
-					}
+			if (sprites[i].pos[X] - SPR_SIZE[sprites[i].type] < x && sprites[i].pos[X] + SPR_SIZE[sprites[i].type] > x) {
+				if (sprites[i].pos[Y] - SPR_SIZE[sprites[i].type] < y && sprites[i].pos[Y] + SPR_SIZE[sprites[i].type] > y) {
+					spriteCollisionBehavior(i, (int)NULL);
+					return 1;
+				}
 			}
+
 		}
+	}
+	return 0;
+}
+
+static Uint8 spriteCollisionBehavior(int index, int collidingIndex) {
+	SPRITE_INFO tmp = defaultSprite;
+	FIXED* pos;
+	//if not provided another sprite index, assume we want to compare to screen pos
+	FIXED x = (collidingIndex ? sprites[collidingIndex].pos[X] : screenX);
+	FIXED y = (collidingIndex ? sprites[collidingIndex].pos[Y] : screenY);
+	switch (sprites[index].type) {
+		case TYPE_CIRCLE:
+			//add 3 bullets where sprite was, remove sprite, display score
+			tmp.attr = &SHOT_ATTR;
+			tmp.type = TYPE_SHOT;
+			tmp.scratchpad = (collidingIndex ? sprites[collidingIndex].scratchpad + 1 : 0);
+			tmp.pos[X] = x;
+			tmp.pos[Y] = y;
+			pos = setShotVelocity(x, y, sprites[index].pos[X], sprites[index].pos[Y]);
+			tmp.dx = pos[0];
+			tmp.dy = pos[1];
+			addSprite(tmp);		
+			tmp.dx = pos[2];
+			tmp.dy = pos[3];
+			addSprite(tmp);	
+			tmp.dx = pos[4];
+			tmp.dy = pos[5];
+			addSprite(tmp);	
+			handleSpriteRemoval(index, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
+			return 1;
+		break;
+		case TYPE_PUSH:
+			sprites[index].dx = (sprites[index].pos[X] - x);
+			sprites[index].dy = (sprites[index].pos[Y] - y);
+			sprites[index].scratchpad = 1; //mark sprite as "pushed" - don't move until it's stopped
+			return 1;
+		break;
 	}
 	return 0;
 }
@@ -523,38 +531,17 @@ static Uint8 checkShotCollision(int index)
 	FIXED y = sprites[index].pos[Y];
 	int i;
 	for (i = 0; i < MAX_SPRITES; i++) {
-		if (sprites[i].state != SPRITE_STATE_NODISP && i != index){
-			switch (sprites[i].type) {
-				case TYPE_CIRCLE:
-					if (sprites[i].pos[X] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < x && sprites[i].pos[X] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > x) {
-						if (sprites[i].pos[Y] - (SPR_SIZE[TYPE_CIRCLE] >> 1) < y && sprites[i].pos[Y] + (SPR_SIZE[TYPE_CIRCLE] >> 1) > y) {
-							SPRITE_INFO tmp = defaultSprite;
-							FIXED* pos;
-							tmp.attr = &SHOT_ATTR;
-							tmp.type = TYPE_SHOT;
-							tmp.pos[X] = sprites[i].pos[X];
-							tmp.pos[Y] = sprites[i].pos[Y];
-							pos = setShotVelocity(x, y, sprites[i].pos[X], sprites[i].pos[Y]);
-							tmp.scratchpad = sprites[index].scratchpad + 1;
-							handleSpriteRemoval(i, POINTS[TYPE_CIRCLE] << tmp.scratchpad);
-							tmp.dx = pos[0];
-							tmp.dy = pos[1];
-							addSprite(tmp);		
-							tmp.dx = pos[2];
-							tmp.dy = pos[3];
-							addSprite(tmp);	
-							tmp.dx = pos[4];
-							tmp.dy = pos[5];
-							addSprite(tmp);								
-							return 1;
-						}
-					}
-				break;
+		if (sprites[i].state != SPRITE_STATE_NODISP){
+			if (sprites[i].pos[X] - (SPR_SIZE[sprites[i].type] >> 1) < x && sprites[i].pos[X] + (SPR_SIZE[sprites[i].type] >> 1) > x) {
+				if (sprites[i].pos[Y] - (SPR_SIZE[sprites[i].type] >> 1) < y && sprites[i].pos[Y] + (SPR_SIZE[sprites[i].type] >> 1) > y) {
+					return spriteCollisionBehavior(i, index);
+				}
 			}
+
 		}
 	}
 	return 0;
-	
+
 }
 
 static void dispSprites(void)
