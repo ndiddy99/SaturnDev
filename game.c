@@ -1,6 +1,6 @@
 /*
 To-Dos:
-Add score/lives
+Add lives
 
 */
 
@@ -19,11 +19,15 @@ Add score/lives
 #define		NBG3_COL_ADR		( VDP2_COLRAM + 0x00600 )
 #define		BACK_COL_ADR		( VDP2_VRAM_A1 + 0x1fffe )
 
+//player movement stuff
 #define PLAYER_STATE_FALLING 0
 #define PLAYER_STATE_RISING 1
 #define PLAYER_STATE_DEAD 2
 int playerState = PLAYER_STATE_FALLING;
+FIXED scale = toFIXED(0.25);
+FIXED scaleSpeed = toFIXED(0.0);
 
+//game state stuff
 #define GAME_STATE_START 0
 #define GAME_STATE_FADEIN 1
 #define GAME_STATE_NORMAL 2 
@@ -32,13 +36,11 @@ int playerState = PLAYER_STATE_FALLING;
 #define GAME_STATE_CURSOR 5
 int gameState; //for main game state machine
 
-FIXED scale = toFIXED(0.25);
-FIXED scaleSpeed = toFIXED(0.0);
-
+//fake playfield
 Uint16 playfield[1024]; //32 * 32
 
+//sprite stuff
 SPRITE_INFO sprites[MAX_SPRITES];
-
 SPRITE_INFO defaultSprite;
 int eye1Index;
 int eye2Index;
@@ -46,6 +48,7 @@ int eye2Index;
 Uint8 numSprites; //the number of sprites the engine's keeping track of
 Uint8 dispFace; //1 if we're displaying the "player face" sprites, 0 otherwise
 
+//screen dimensions
 FIXED screenX = toFIXED(0.0);
 FIXED screenY = toFIXED(0.0);
 #define SCREEN_BOUND_L toFIXED(-160)
@@ -53,11 +56,13 @@ FIXED screenY = toFIXED(0.0);
 #define SCREEN_BOUND_T toFIXED(-112)
 #define SCREEN_BOUND_B toFIXED(112)
 
+//bg stuff
 Uint16 bgLayers;
 #define MODE_TILEMAP 0
 #define MODE_LINESCROLL 1
-Uint8 bgMode = MODE_TILEMAP;
+Uint8 bgMode = MODE_LINESCROLL;
 
+int score = 0;
 
 //function prototypes
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
@@ -69,7 +74,7 @@ static void handlePlayerMovement(void);
 static Uint8 handleSpriteCollision(FIXED x, FIXED y);
 static Uint8 handleGroundCollision(FIXED x, FIXED y);
 static Uint8 spriteCollisionBehavior(int index, int collidingIndex);
-static void handleSpriteRemoval(int index, int score);
+static void handleSpriteRemoval(int index, int points);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
 static FIXED* setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED spriteY);
 static void updateSprites(void);
@@ -78,6 +83,7 @@ static void dispSprites(void);
 static void drawPlayField(void);
 static int getNumDigits(int num);
 static void dispNum(int number, FIXED x, FIXED y);
+static void dispScore(void);
 
 
 static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
@@ -228,7 +234,6 @@ static void initVDP2(void)
 
 static void updateBG(void)
 {	
-	slPrint("updateBG", slLocate(0,0));
 	if (gameState == GAME_STATE_NORMAL) {
 		handlePlayerMovement();
 	}
@@ -310,7 +315,6 @@ static void handlePlayerMovement(void)
 static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 {
 	//NEED TO RETURN 1 AFTER COLLISION!
-	slPrint("handleSpriteCollision", slLocate(0,0));
 	//if ball x > sprite x1 and < sprite x2 
 	int i;
 	for (i = 0; i < MAX_SPRITES; i++) {
@@ -364,13 +368,13 @@ static Uint8 spriteCollisionBehavior(int index, int collidingIndex) {
 	return 0;
 }
 
-static void handleSpriteRemoval(int index, int score) {
-	dispNum(score, sprites[index].pos[X], sprites[index].pos[Y]);
+static void handleSpriteRemoval(int index, int points) {
+	score += points;
+	dispNum(points, sprites[index].pos[X], sprites[index].pos[Y]);
 	deleteSprite(index);
 }
 
 static Uint8 handleGroundCollision(FIXED x, FIXED y) {
-	slPrint("handleGroundCollision", slLocate(0,0));
 	#define BLOCK_THRESHOLD_LOW toFIXED(0.2)
 	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
 	FIXED xDecimal = x & 0x0000ffff;
@@ -403,7 +407,6 @@ static void writeBlock(Uint16 x, Uint16 y, Uint16 data) {
 #define FRICTION toFIXED(0.5)
 static void updateSprites(void)
 {
-	slPrint("updateSprites", slLocate(0,0));
 	int i;
 	FIXED dx, dy;
 	for (i = 0; i < MAX_SPRITES; i++) {
@@ -526,7 +529,6 @@ static FIXED* setShotVelocity(FIXED playerX, FIXED playerY, FIXED spriteX, FIXED
 
 static Uint8 checkShotCollision(int index) 
 {
-	slPrint("checkShotCollision", slLocate(0,0));
 	FIXED x = sprites[index].pos[X];
 	FIXED y = sprites[index].pos[Y];
 	int i;
@@ -546,7 +548,6 @@ static Uint8 checkShotCollision(int index)
 
 static void dispSprites(void)
 {
-	slPrint("dispSprites", slLocate(0,0));
 	int i;
 	FIXED spritePos[XYZS];
 	for (i = 0; i < MAX_SPRITES; i++) {
@@ -660,6 +661,7 @@ static int getNumDigits(int num)
 		return 10;
 }
 
+//adds a collection of sprites with the passed number's digits to the playfield
 #define NUMBER_WIDTH (9 << 16) //width in pixels of each number sprite
 static void dispNum(int number, FIXED x, FIXED y)
 {
@@ -674,6 +676,25 @@ static void dispNum(int number, FIXED x, FIXED y)
 		number /= 10;
 		addSprite(tmp);
 		tmp.pos[X] -= NUMBER_WIDTH;
+	}
+}
+
+static void dispScore(void)
+{
+	
+	int i;
+	int tempScore = score;
+	SPR_ATTR digitSprite = SPR_ATTRIBUTE(0,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
+	FIXED digitPos[XYZS];
+	digitPos[X] = toFIXED(-60);
+	digitPos[Y] = toFIXED(-105);
+	digitPos[Z] = toFIXED(160);
+	digitPos[S] = toFIXED(1);
+	for (i = 0; i < 10; i++) {
+		digitSprite.texno = (tempScore % 10) + TYPE_DIGIT;
+		tempScore /= 10;
+		digitPos[X] -= NUMBER_WIDTH;
+		slDispSprite(digitPos, &digitSprite, DEGtoANG(0));
 	}
 }
 
@@ -694,13 +715,14 @@ void runLevel(void)
 	tmp.pos[Y] = toFIXED(0);
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSprite(tmp);
-	// dispNum(42069, toFIXED(15), toFIXED(0));
 	while (1) {
+		// 
 		switch (gameState) {
 			case GAME_STATE_START:
 				updateBG();
 				dispSprites();
 				drawPlayField();
+				dispScore();
 				slSynch();
 				if (sprites[player].pos[S] > toFIXED(1.0)) {
 					sprites[player].pos[S] -= toFIXED(0.1);
@@ -721,6 +743,7 @@ void runLevel(void)
 					updateSprites();
 					dispSprites();
 					drawPlayField();
+					dispScore();
 					slSynch();
 				}
 				else
@@ -732,6 +755,7 @@ void runLevel(void)
 				updateSprites();
 				dispSprites();
 				drawPlayField();
+				dispScore();
 				slPrintHex(numSprites, slLocate(0,7));
 				slSynch();
 				if (numSprites <= NUM_PLAYER_SPRITES) {
@@ -745,6 +769,7 @@ void runLevel(void)
 					updateBG();
 					dispSprites();
 					drawPlayField();
+					dispScore();
 					slSynch();
 				}
 				else {
@@ -765,6 +790,7 @@ void runLevel(void)
 				dispSprites();
 				updateBG();
 				drawPlayField();
+				dispScore();
 				slSynch();
 				if (sprites[player].pos[S] < toFIXED(6.0)) {
 					sprites[player].pos[S] += toFIXED(0.1);
@@ -779,6 +805,7 @@ void runLevel(void)
 				handleInput();
 				dispSprites();
 				updateBG();
+				drawPlayField();
 				slPrint("X:", slLocate(0,4));
 				slPrintFX(screenX, slLocate(3,4));
 				slPrint("Y:", slLocate(0,5));
