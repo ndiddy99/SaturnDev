@@ -21,6 +21,8 @@ SPR_ATTR SEVEN_ATTR = SPR_ATTRIBUTE(37,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,
 SPR_ATTR EIGHT_ATTR = SPR_ATTRIBUTE(38,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
 SPR_ATTR NINE_ATTR  = SPR_ATTRIBUTE(39,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
 
+SPR_ATTR LIFE_ATTR  = SPR_ATTRIBUTE(40,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); //for lives icon
+
 //needs to be in the same order as sprite type defines in spritelist.h
 FIXED SPR_SIZE[] = {toFIXED(0), toFIXED(16), toFIXED(8), toFIXED(0), toFIXED(16)}; //collision radius
 SPR_ATTR* SPR_ATTRS[] = {NULL, &CIRCLE_ATTR, &SHOT_ATTR, NULL, &PUSH_ATTR};

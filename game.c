@@ -63,6 +63,8 @@ Uint16 bgLayers;
 Uint8 bgMode = MODE_LINESCROLL;
 
 int score = 0;
+#define DEFAULT_LIVES 5
+int lives = DEFAULT_LIVES;
 
 //function prototypes
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
@@ -83,6 +85,8 @@ static void dispSprites(void);
 static void drawPlayField(void);
 static int getNumDigits(int num);
 static void dispNum(int number, FIXED x, FIXED y);
+static inline void updateHud(void);
+static void dispLives(void);
 static void dispScore(void);
 
 
@@ -277,6 +281,8 @@ static void handlePlayerMovement(void)
 					tmp.pos[S] = toFIXED(1.0);
 					playerNode = addSprite(tmp);
 					playerFallSpeed = toFIXED(0.0);
+					if (lives > 0)
+						lives--;
 				}
 			}
 		}
@@ -370,6 +376,8 @@ static Uint8 spriteCollisionBehavior(int index, int collidingIndex) {
 
 static void handleSpriteRemoval(int index, int points) {
 	score += points;
+	if (score > 999999999) //looks better to wrap around at 1 billion than 4.whatever billion
+		score = 0;
 	dispNum(points, sprites[index].pos[X], sprites[index].pos[Y]);
 	deleteSprite(index);
 }
@@ -605,7 +613,7 @@ static void initGame(void)
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
 	slTVOff();
-	set_sprite(pic_sprites, 40, tex_sprites);
+	set_sprite(pic_sprites, 41, tex_sprites);
 	initVDP2();
 	slTVOn();
 }
@@ -679,6 +687,25 @@ static void dispNum(int number, FIXED x, FIXED y)
 	}
 }
 
+static inline void updateHud(void)
+{
+	dispLives();
+	dispScore();
+}
+
+static void dispLives(void)
+{
+	int i;
+	FIXED lifePos[XYZS];
+	lifePos[X] = toFIXED(60);
+	lifePos[Y] = toFIXED(-105);
+	lifePos[Z] = toFIXED(160);
+	lifePos[S] = toFIXED(1);
+	for (i = 0; i < lives; i++) {
+		slDispSprite(lifePos, &LIFE_ATTR, DEGtoANG(0));
+		lifePos[X] += toFIXED(9);
+	}
+}
 static void dispScore(void)
 {
 	
@@ -690,7 +717,7 @@ static void dispScore(void)
 	digitPos[Y] = toFIXED(-105);
 	digitPos[Z] = toFIXED(160);
 	digitPos[S] = toFIXED(1);
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 9; i++) {
 		digitSprite.texno = (tempScore % 10) + TYPE_DIGIT;
 		tempScore /= 10;
 		digitPos[X] -= NUMBER_WIDTH;
@@ -722,7 +749,7 @@ void runLevel(void)
 				updateBG();
 				dispSprites();
 				drawPlayField();
-				dispScore();
+				updateHud();
 				slSynch();
 				if (sprites[player].pos[S] > toFIXED(1.0)) {
 					sprites[player].pos[S] -= toFIXED(0.1);
@@ -743,7 +770,7 @@ void runLevel(void)
 					updateSprites();
 					dispSprites();
 					drawPlayField();
-					dispScore();
+					updateHud();
 					slSynch();
 				}
 				else
@@ -755,7 +782,7 @@ void runLevel(void)
 				updateSprites();
 				dispSprites();
 				drawPlayField();
-				dispScore();
+				updateHud();
 				slPrintHex(numSprites, slLocate(0,7));
 				slSynch();
 				if (numSprites <= NUM_PLAYER_SPRITES) {
@@ -769,7 +796,7 @@ void runLevel(void)
 					updateBG();
 					dispSprites();
 					drawPlayField();
-					dispScore();
+					updateHud();
 					slSynch();
 				}
 				else {
@@ -790,7 +817,7 @@ void runLevel(void)
 				dispSprites();
 				updateBG();
 				drawPlayField();
-				dispScore();
+				updateHud();
 				slSynch();
 				if (sprites[player].pos[S] < toFIXED(6.0)) {
 					sprites[player].pos[S] += toFIXED(0.1);
