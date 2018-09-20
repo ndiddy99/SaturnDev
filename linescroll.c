@@ -29,7 +29,7 @@ void initLinescroll(void) {
 	for (i = 0; i < 224; i++) //write scroll offset table
 		lineScrTable[i] = slSin(DEGtoANG(i << 2)) << 6;
 	
-	for (i = 0; i < 16; i++) //write color gradient
+	for (i = 0; i <= 16; i++) //write color gradient
 		colorRam[i] = COLOR(i, 0, i);
 	
 	//init road

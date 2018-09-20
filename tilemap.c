@@ -27,6 +27,7 @@ void initTilemap(void) {
 	Map2VRAM(map_road, (void *)NBG1_MAP_ADR, 64, 64, 1, 0); 
 	Pal2CRAM(pal_road, (void *)NBG1_COL_ADR, 256);
 	slScrPosNbg1(toFIXED(0), toFIXED(0));
+	slLineScrollModeNbg1(0); //hopefully disable line scroll
 	
 	//init clouds
 	slCharNbg2(COL_TYPE_256, CHAR_SIZE_2x2);

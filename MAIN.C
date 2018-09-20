@@ -23,7 +23,6 @@ Uint16 spritepos1[] = {
 	90, 90, TYPE_CIRCLE,
 	90, 90, TYPE_CIRCLE,
 	90, 90, TYPE_CIRCLE,
-	
 	90, 90, TYPE_PUSH
 	
 };
@@ -46,9 +45,13 @@ void ss_main(void) { //entry point for program
 	while (1) {
 		loadLevel(map_map1);
 		loadSpritePos(spritepos1, sizeof(spritepos1)/sizeof(Uint16));
+		loadPlayerPos(toFIXED(82),toFIXED(82));
+		bgMode = MODE_LINESCROLL;
 		runLevel();
 		loadLevel(map_map2);
 		loadSpritePos(spritepos2, sizeof(spritepos2)/sizeof(Uint16));
+		loadPlayerPos(toFIXED(34),toFIXED(30));
+		bgMode = MODE_TILEMAP;
 		runLevel();
 	}
 }

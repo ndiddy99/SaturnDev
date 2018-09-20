@@ -1,6 +1,6 @@
 /*
 To-Dos:
-Add lives
+Have lives affect game
 
 */
 
@@ -58,9 +58,7 @@ FIXED screenY = toFIXED(0.0);
 
 //bg stuff
 Uint16 bgLayers;
-#define MODE_TILEMAP 0
-#define MODE_LINESCROLL 1
-Uint8 bgMode = MODE_LINESCROLL;
+Uint8 bgMode = MODE_TILEMAP;
 
 int score = 0;
 #define DEFAULT_LIVES 5
@@ -151,9 +149,9 @@ static void handleInput(void)
 	}
 	if (gameState == GAME_STATE_CURSOR) {
 		if (data & PER_DGT_TB)
-			scale += toFIXED(0.01);
+			scale += toFIXED(0.1);
 		else if (data & PER_DGT_TC)
-			scale -= toFIXED(0.01);
+			scale -= toFIXED(0.1);
 	}
 	
 	
@@ -258,6 +256,7 @@ static void handlePlayerMovement(void)
 	static FIXED playerFallSpeed;
 	switch (playerState) {
 	case PLAYER_STATE_FALLING:
+		slPrint("fall", slLocate(0,8));
 		slPrintFX(scaleSpeed, slLocate(0,2));
 		slPrintFX(scale, slLocate(0,3));
 		scaleSpeed += GRAVITY;
@@ -290,11 +289,11 @@ static void handlePlayerMovement(void)
 	case PLAYER_STATE_RISING:
 		slPrintFX(scaleSpeed, slLocate(0,2));
 		slPrintFX(scale, slLocate(0,3));
+		slPrint("rise", slLocate(0,8));
 		scaleSpeed += GRAVITY;
 		scale += scaleSpeed;
 		if (scaleSpeed >= 0) {
 			playerState = PLAYER_STATE_FALLING;
-			scaleSpeed = 0;
 		}
 	break;
 	case PLAYER_STATE_DEAD:
@@ -607,8 +606,6 @@ static void drawPlayField(void)
 
 static void initGame(void)
 {	
-	screenX = 0;
-	screenY = 0;
 	scale = toFIXED(1.0);
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
@@ -643,6 +640,12 @@ void loadSpritePos(Uint16 posArr[], int size)
 		tmp.attr = SPR_ATTRS[posArr[i]];
 		addSprite(tmp);
 	}
+}
+
+void loadPlayerPos(FIXED x, FIXED y)
+{
+	screenX = x;
+	screenY = y;
 }
 
 static int getNumDigits(int num)
@@ -737,13 +740,11 @@ void runLevel(void)
 	SPRITE_INFO tmp = defaultSprite;
 	tmp.attr = &PLAYER_ATTR;
 	tmp.type = TYPE_NULL;
-	// tmp.state = SPRITE_STATE_NORM;
-	tmp.pos[X] = toFIXED(0);
-	tmp.pos[Y] = toFIXED(0);
+	tmp.pos[X] = screenX;
+	tmp.pos[Y] = screenY;
 	tmp.pos[S] = toFIXED(6.0);
 	player = addSprite(tmp);
 	while (1) {
-		// 
 		switch (gameState) {
 			case GAME_STATE_START:
 				updateBG();
