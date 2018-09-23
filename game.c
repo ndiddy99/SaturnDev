@@ -34,10 +34,12 @@ FIXED scaleSpeed = toFIXED(0.0);
 #define GAME_STATE_FADEOUT 3
 #define GAME_STATE_COMPLETE 4
 #define GAME_STATE_CURSOR 5
+#define GAME_STATE_GAMEOVER 6
 int gameState; //for main game state machine
 
 //fake playfield
 Uint16 playfield[1024]; //32 * 32
+Uint16* playfieldPtr;
 
 //sprite stuff
 SPRITE_INFO sprites[MAX_SPRITES];
@@ -55,14 +57,16 @@ FIXED screenY = toFIXED(0.0);
 #define SCREEN_BOUND_R toFIXED(160)
 #define SCREEN_BOUND_T toFIXED(-112)
 #define SCREEN_BOUND_B toFIXED(112)
+FIXED startX = toFIXED(0.0);
+FIXED startY = toFIXED(0.0);
 
 //bg stuff
 Uint16 bgLayers;
 Uint8 bgMode = MODE_TILEMAP;
 
 int score = 0;
-#define DEFAULT_LIVES 5
-int lives = DEFAULT_LIVES;
+int lives = 1;
+int frames = 0;
 
 //function prototypes
 static void set_sprite(PICTURE *pcptr , Uint32 NbPicture, TEXTURE *txptr);
@@ -207,10 +211,14 @@ static void initVDP2(void)
 		case MODE_TILEMAP:
 			initTilemap();
 			bgLayers = TILEMAP_BGS;
+			slColorCalc(CC_RATE | CC_TOP | NBG2ON | NBG3ON);
+			slColorCalcOn(NBG2ON | NBG3ON);
 		break;
 		case MODE_LINESCROLL:
 			initLinescroll();
 			bgLayers = LINESCROLL_BGS;
+			slColorCalc(CC_RATE | CC_TOP | NBG3ON);
+			slColorCalcOn(NBG3ON);
 		break;
 	}
 	
@@ -220,12 +228,11 @@ static void initVDP2(void)
 	slPlaneNbg3(PL_SIZE_1x1);
 	slMapNbg3((void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR , (void *)NBG3_MAP_ADR);
 	Cel2VRAM(cel_face, (void *)NBG3_CEL_ADR, 16 * 64 * 4);
-	//offset parameter (64 here) seems to be # of tiles before start of this bg's tiles (256 byte) in that vram bank * 2
+	//offset parameter seems to be # of tiles before start of this bg's tiles (256 byte) in that vram bank * 2
 	Map2VRAM(map_face, (void *)NBG3_MAP_ADR, 64, 64, 3, 0);
 	Pal2CRAM(pal_face, (void *)NBG3_COL_ADR, 256);
 	slScrPosNbg3(toFIXED(-160.0) + toFIXED(32.0), toFIXED(-116.0) + toFIXED(32.0)); //plus half width of sprite
 	slPriorityNbg3(7);
-	slColorCalc(CC_RATE | CC_TOP | NBG3ON);
 	slColRateNbg3(0x00);
 	
 	// slColorCalcOn(NBG2ON | NBG3ON);
@@ -280,8 +287,6 @@ static void handlePlayerMovement(void)
 					tmp.pos[S] = toFIXED(1.0);
 					playerNode = addSprite(tmp);
 					playerFallSpeed = toFIXED(0.0);
-					if (lives > 0)
-						lives--;
 				}
 			}
 		}
@@ -303,15 +308,21 @@ static void handlePlayerMovement(void)
 			sprites[playerNode].ang += 5;
 		}   
 		else { //reset player pos
+			if (lives == 0) {
+				gameState = GAME_STATE_GAMEOVER;
+				return;
+			}
 			scale = toFIXED(1.0);
 			scaleSpeed = toFIXED(0.0);
-			screenX = toFIXED(0.0);
-			screenY = toFIXED(0.0);
+			screenX = startX;
+			screenY = startY;
 			playerState = PLAYER_STATE_FALLING;
 			bgLayers |= NBG3ON;
 			slScrAutoDisp(bgLayers);
 			dispFace = 1;
 			deleteSprite(playerNode);
+			loadLevel(playfieldPtr); //don't want there to be no level to spawn onto, so we reload it
+			lives--;
 		}
 	break;
 	}	
@@ -606,6 +617,8 @@ static void drawPlayField(void)
 
 static void initGame(void)
 {	
+	screenX = startX;
+	screenY = startY;
 	scale = toFIXED(1.0);
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
@@ -618,6 +631,7 @@ static void initGame(void)
 void loadLevel(Uint16 map[])
 {
 	int i;
+	playfieldPtr = map;
 	for (i = 0; i < 1024; i++) {
 		playfield[i] = map[i];
 	}
@@ -644,8 +658,8 @@ void loadSpritePos(Uint16 posArr[], int size)
 
 void loadPlayerPos(FIXED x, FIXED y)
 {
-	screenX = x;
-	screenY = y;
+	startX = x;
+	startY = y;
 }
 
 static int getNumDigits(int num)
@@ -728,7 +742,7 @@ static void dispScore(void)
 	}
 }
 
-void runLevel(void)
+int runLevel(void)
 {
 	int player; //player sprite for animate up
 	gameState = GAME_STATE_START;
@@ -826,7 +840,7 @@ void runLevel(void)
 				}
 				else {
 					clearSpriteList();
-					return;
+					return 1;
 				}
 			break;
 			case GAME_STATE_CURSOR:
@@ -840,6 +854,18 @@ void runLevel(void)
 				slPrintFX(screenY, slLocate(3,5));
 				slSynch();
 			break;
+			case GAME_STATE_GAMEOVER:
+				dispSprites();
+				updateBG();
+				drawPlayField();
+				updateHud();
+				slSynch();
+				if (frames < 120)
+					frames++;
+				else {
+					clearSpriteList();
+					return 0;
+				}
 		}
 	}
 }

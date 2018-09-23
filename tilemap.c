@@ -40,7 +40,7 @@ void initTilemap(void) {
 	slScrPosNbg2(toFIXED(0), toFIXED(0));
 	slPriorityNbg2(4);
 	slColRateNbg2(0x05);
-	
+	slColorCalcOn(NBG2ON);
 }
 
 void updateTilemap(void) {
