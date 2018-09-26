@@ -22,12 +22,21 @@ SPR_ATTR EIGHT_ATTR = SPR_ATTRIBUTE(38,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,
 SPR_ATTR NINE_ATTR  = SPR_ATTRIBUTE(39,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
 
 SPR_ATTR LIFE_ATTR  = SPR_ATTRIBUTE(40,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); //for lives icon
-
+//game over text
+SPR_ATTR G_ATTR     = SPR_ATTRIBUTE(41,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
+SPR_ATTR A_ATTR     = SPR_ATTRIBUTE(42,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
+SPR_ATTR M_ATTR     = SPR_ATTRIBUTE(43,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
+SPR_ATTR E_ATTR     = SPR_ATTRIBUTE(44,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip);
+SPR_ATTR O_ATTR     = SPR_ATTRIBUTE(45,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
+SPR_ATTR V_ATTR     = SPR_ATTRIBUTE(46,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
+SPR_ATTR R_ATTR     = SPR_ATTRIBUTE(47,No_Palet,No_Gouraud,CL32KRGB|SPenb|ECdis,sprNoflip); 
 //needs to be in the same order as sprite type defines in spritelist.h
 FIXED SPR_SIZE[] = {toFIXED(0), toFIXED(16), toFIXED(8), toFIXED(0), toFIXED(16)}; //collision radius
 SPR_ATTR* SPR_ATTRS[] = {NULL, &CIRCLE_ATTR, &SHOT_ATTR, NULL, &PUSH_ATTR};
 int POINTS[] = {0, 100, 0, 0, 150}; //points per thing
 
 SPR_ATTR* DIGITS[] = {&ZERO_ATTR, &ONE_ATTR, &TWO_ATTR, &THREE_ATTR, &FOUR_ATTR, &FIVE_ATTR, &SIX_ATTR, &SEVEN_ATTR, &EIGHT_ATTR, &NINE_ATTR};
+
+SPR_ATTR* GAMEOVER[] = {&G_ATTR, &A_ATTR, &M_ATTR, &E_ATTR, &O_ATTR, &V_ATTR, &E_ATTR, &R_ATTR};
 
 #endif

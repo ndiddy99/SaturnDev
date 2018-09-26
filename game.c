@@ -1,6 +1,9 @@
 /*
 To-Dos:
-Have lives affect game
+
+Have a game over graphic when it's game over
+Separate out enemy logic
+
 
 */
 
@@ -65,7 +68,7 @@ Uint16 bgLayers;
 Uint8 bgMode = MODE_TILEMAP;
 
 int score = 0;
-int lives = 1;
+int lives = DEFAULT_LIVES;
 int frames = 0;
 
 //function prototypes
@@ -90,7 +93,7 @@ static void dispNum(int number, FIXED x, FIXED y);
 static inline void updateHud(void);
 static void dispLives(void);
 static void dispScore(void);
-
+static int dispGameOver();
 
 static void set_sprite(PICTURE *pcptr, Uint32 NbPicture, TEXTURE *texptr)
 {
@@ -310,6 +313,7 @@ static void handlePlayerMovement(void)
 		else { //reset player pos
 			if (lives == 0) {
 				gameState = GAME_STATE_GAMEOVER;
+				deleteSprite(playerNode);
 				return;
 			}
 			scale = toFIXED(1.0);
@@ -337,8 +341,7 @@ static Uint8 handleSpriteCollision(FIXED x, FIXED y)
 		if (sprites[i].state != SPRITE_STATE_NODISP) {
 			if (sprites[i].pos[X] - SPR_SIZE[sprites[i].type] < x && sprites[i].pos[X] + SPR_SIZE[sprites[i].type] > x) {
 				if (sprites[i].pos[Y] - SPR_SIZE[sprites[i].type] < y && sprites[i].pos[Y] + SPR_SIZE[sprites[i].type] > y) {
-					spriteCollisionBehavior(i, (int)NULL);
-					return 1;
+					return spriteCollisionBehavior(i, (int)NULL);
 				}
 			}
 
@@ -622,8 +625,9 @@ static void initGame(void)
 	scale = toFIXED(1.0);
 	scaleSpeed = toFIXED(0);
 	playerState = PLAYER_STATE_FALLING;
+	frames = 0;
 	slTVOff();
-	set_sprite(pic_sprites, 41, tex_sprites);
+	set_sprite(pic_sprites, 48, tex_sprites);
 	initVDP2();
 	slTVOn();
 }
@@ -742,6 +746,46 @@ static void dispScore(void)
 	}
 }
 
+static int dispGameOver()
+{
+	SPRITE_INFO gameOver;
+	static int letterIndex = 0;
+	int currentIndex; //index of the sprite being animated
+	if (letterIndex == 9) {
+		if (frames) //has the function been run before in this function?
+			return 1; //yes- return
+		else
+			letterIndex = 0; //otherwise reinit letterIndex, continue execution
+	}
+	if (!frames) { //do init first time function's run
+		gameOver = defaultSprite;
+		gameOver.type = TYPE_NULL;
+		gameOver.attr = GAMEOVER[letterIndex++];
+		gameOver.pos[X] = screenX - toFIXED(25);
+		gameOver.pos[Y] = screenY;
+		gameOver.pos[Z] = toFIXED(160);
+		gameOver.pos[S] = toFIXED(2);
+		currentIndex = addSprite(gameOver);
+		frames++;
+	}
+	else if (frames == 1 && letterIndex) { //don't do init when you're adding letters after init
+		gameOver.attr = GAMEOVER[letterIndex++];
+		currentIndex = addSprite(gameOver);
+		frames++;
+	}
+	else {
+		sprites[currentIndex].pos[X] += toFIXED(1);
+		frames++;
+		if (frames > 8) {
+			frames = 1;
+			gameOver.pos[X] = sprites[currentIndex].pos[X];
+			if (letterIndex == 8) //stop from adding another sprite after last letter animates
+				letterIndex = 9;
+		}
+	}
+	return 0;
+}
+
 int runLevel(void)
 {
 	int player; //player sprite for animate up
@@ -855,14 +899,15 @@ int runLevel(void)
 				slSynch();
 			break;
 			case GAME_STATE_GAMEOVER:
-				dispSprites();
 				updateBG();
+				updateSprites();
+				dispSprites();
 				drawPlayField();
 				updateHud();
 				slSynch();
-				if (frames < 120)
+				if (dispGameOver()) //wait 2 seconds after game over animation finishes
 					frames++;
-				else {
+				if (frames > 120) {
 					clearSpriteList();
 					return 0;
 				}
