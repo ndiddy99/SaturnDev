@@ -13,11 +13,12 @@ typedef struct levelInfo {
 	Uint8 background;
 } LEVEL;
 
-#define NUM_LEVELS 2
-int level = 0;
+#define NUM_LEVELS 3
+int level = 2;
 LEVEL levels[] = {
 	{map_map1, spritepos1, sizeof(spritepos1)/sizeof(Uint16), toFIXED(82), toFIXED(82), MODE_LINESCROLL},
 	{map_map2, spritepos2, sizeof(spritepos2)/sizeof(Uint16), toFIXED(34), toFIXED(30), MODE_TILEMAP},
+	{map_map3, spritepos2, sizeof(spritepos2)/sizeof(Uint16), toFIXED(0), toFIXED(0), MODE_TILEMAP},
 };
 
 int playLevel(LEVEL l);

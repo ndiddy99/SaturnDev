@@ -79,7 +79,7 @@ static void initVDP2(void);
 static void updateBG(void);
 static void handlePlayerMovement(void);
 static Uint8 handleSpriteCollision(FIXED x, FIXED y);
-static Uint8 handleGroundCollision(FIXED x, FIXED y);
+static FIXED handleGroundCollision(FIXED x, FIXED y);
 static Uint8 spriteCollisionBehavior(int index, int collidingIndex);
 static void handleSpriteRemoval(int index, int points);
 static void writeBlock(Uint16 x, Uint16 y, Uint16 data);
@@ -273,11 +273,11 @@ static void handlePlayerMovement(void)
 		scale += scaleSpeed;
 		if (scale >= toFIXED(5)) { //when we "hit the ground"
 			playerState = PLAYER_STATE_RISING;
-			scaleSpeed = toFIXED(-0.25); //we're setting the speed here to avoid rounding errors causing bouncing less height each time
+			scaleSpeed = handleGroundCollision((screenX >> 4), (screenY >> 4));//toFIXED(-0.25); //we're setting the speed here to avoid rounding errors causing bouncing less height each time
 		//	slPrintFX((screenX >> 4), slLocate(0,1));
 			//slPrintFX((screenY >> 4), slLocate(0,2));
 			if (!handleSpriteCollision(screenX, screenY)) {
-				if (!handleGroundCollision((screenX >> 4), (screenY >> 4))) { //divide by 16- 16 px per tile
+				if (!scaleSpeed) {
 					playerState = PLAYER_STATE_DEAD;
 					bgLayers &= ~NBG3ON;
 					slScrAutoDisp(bgLayers); //turn off player's bg layer
@@ -395,12 +395,14 @@ static void handleSpriteRemoval(int index, int points) {
 	deleteSprite(index);
 }
 
-static Uint8 handleGroundCollision(FIXED x, FIXED y) {
+//returns speed that ball should travel at
+static FIXED handleGroundCollision(FIXED x, FIXED y) {
 	#define BLOCK_THRESHOLD_LOW toFIXED(0.2)
 	#define BLOCK_THRESHOLD_HIGH toFIXED(0.8)
 	FIXED xDecimal = x & 0x0000ffff;
 	FIXED yDecimal = y & 0x0000ffff;
-	if (MapRead(playfield, fixedToUint16(x), fixedToUint16(y)) == 0x0000) //if no ground
+	Uint16 currBlock = MapRead(playfield, fixedToUint16(x), fixedToUint16(y));
+	if (currBlock == 0x0000) //if no ground
 		return 0;
 	if (xDecimal > BLOCK_THRESHOLD_HIGH || xDecimal < BLOCK_THRESHOLD_LOW) { //either less than .2 or greater than .8: trigger block to left and block
 		writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
@@ -416,7 +418,16 @@ static Uint8 handleGroundCollision(FIXED x, FIXED y) {
 		if (yDecimal > BLOCK_THRESHOLD_HIGH || yDecimal < BLOCK_THRESHOLD_LOW)
 			writeBlock(fixedToUint16(x) - 1, fixedToUint16(y), 0x0000);
 	}
-	return 1;
+	switch (currBlock) {
+		case 0x0002: //normal/breakable block
+		case 0x0004:
+			return toFIXED(-0.25);
+		break;
+		case 0x0006: //vertical/horizontal rail block
+		case 0x0008:
+			return toFIXED(-0.18);
+		break;
+	}
 }
 
 //when I have more block types, this should scan them to make sure they're breakable before breaking them

@@ -6,7 +6,7 @@ extern Uint8 numSprites; //current number of onscreen sprites
 #define MAX_SPRITES 200
 extern SPRITE_INFO sprites[MAX_SPRITES];
 extern int score;
-#define DEFAULT_LIVES 0
+#define DEFAULT_LIVES 5
 extern int lives;
 
 #define MODE_TILEMAP 0

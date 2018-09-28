@@ -7,6 +7,7 @@
 
 #include "assets\map1.map"
 #include "assets\map2.map"
+#include "assets\map3.map"
 
 #include "assets\road.cel"
 #include "assets\road.map"
